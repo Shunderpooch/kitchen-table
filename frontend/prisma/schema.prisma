@@ -1,0 +1,135 @@
+// Prisma schema for Expenses Pipeline
+// Shared SQLite database with Python backend
+
+generator client {
+    provider   = "prisma-client-js"
+    output     = "../generated/prisma"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+model Category {
+    id       Int       @id @default(autoincrement())
+    name     String    @unique
+    parentId Int?      @map("parent_id")
+    color    String?
+
+    // Self-relation for hierarchy
+    parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+    children Category[] @relation("CategoryHierarchy")
+
+    // Relations
+    subtypes           Subtype[]
+    expenses           Expense[]
+    merchantMappings   MerchantMapping[]
+    suggestedCategory  ValidationQueueItem[] @relation("SuggestedCategory")
+
+    @@map("categories")
+}
+
+model Subtype {
+    id         Int     @id @default(autoincrement())
+    categoryId Int     @map("category_id")
+    name       String
+    keywords   String?
+
+    // Relations
+    category         Category              @relation(fields: [categoryId], references: [id])
+    expenses         Expense[]
+    merchantMappings MerchantMapping[]
+    suggestedSubtype ValidationQueueItem[] @relation("SuggestedSubtype")
+
+    @@map("subtypes")
+}
+
+model SourceFile {
+    id           Int       @id @default(autoincrement())
+    filename     String
+    fileType     String?   @map("file_type")
+    rowCount     Int?      @map("row_count")
+    processedAt  DateTime? @map("processed_at")
+    status       String    @default("pending")
+    errorMessage String?   @map("error_message")
+
+    // Relations
+    expenses Expense[]
+
+    @@map("source_files")
+}
+
+model StatementSource {
+    id                    Int       @id @default(autoincrement())
+    name                  String    @unique
+    sourceType            String?   @map("source_type")
+    lastImportDate        DateTime? @map("last_import_date")
+    expectedFrequencyDays Int       @default(30) @map("expected_frequency_days")
+
+    @@map("statement_sources")
+}
+
+model Expense {
+    id               Int       @id @default(autoincrement())
+    date             DateTime
+    type             String
+    subtype          String?
+    merchant         String?
+    amount           Decimal
+    split            Decimal   @default(1.0)
+    memberBSpend     Decimal?  @map("member_b_spend")
+    memberASpend     Decimal?  @map("member_a_spend")
+    spender          String?
+    card             String?
+    logToWork        Boolean?  @map("log_to_work")
+    tag              String?
+    link             String?
+    trackWithFriends String?   @map("track_with_friends")
+    sourceFileId     Int?      @map("source_file_id")
+    categoryId       Int?      @map("category_id")
+    subtypeId        Int?      @map("subtype_id")
+    isDuplicate      Boolean   @default(false) @map("is_duplicate")
+    needsValidation  Boolean   @default(false) @map("needs_validation")
+    contentHash      String?   @map("content_hash")
+    createdAt        DateTime  @default(now()) @map("created_at")
+
+    // Relations
+    sourceFile     SourceFile?          @relation(fields: [sourceFileId], references: [id])
+    categoryRel    Category?            @relation(fields: [categoryId], references: [id])
+    subtypeRel     Subtype?             @relation(fields: [subtypeId], references: [id])
+    validationItem ValidationQueueItem?
+
+    @@map("expenses")
+}
+
+model MerchantMapping {
+    id                 Int      @id @default(autoincrement())
+    merchantPattern    String   @map("merchant_pattern")
+    categoryId         Int?     @map("category_id")
+    subtypeId          Int?     @map("subtype_id")
+    requiresValidation Boolean  @default(false) @map("requires_validation")
+
+    // Relations
+    category Category? @relation(fields: [categoryId], references: [id])
+    subtype  Subtype?  @relation(fields: [subtypeId], references: [id])
+
+    @@map("merchant_mappings")
+}
+
+model ValidationQueueItem {
+    id                  Int       @id @default(autoincrement())
+    expenseId           Int       @unique @map("expense_id")
+    reason              String?
+    suggestedCategoryId Int?      @map("suggested_category_id")
+    suggestedSubtypeId  Int?      @map("suggested_subtype_id")
+    status              String    @default("pending")
+    validatedAt         DateTime? @map("validated_at")
+
+    // Relations
+    expense           Expense   @relation(fields: [expenseId], references: [id])
+    suggestedCategory Category? @relation("SuggestedCategory", fields: [suggestedCategoryId], references: [id])
+    suggestedSubtype  Subtype?  @relation("SuggestedSubtype", fields: [suggestedSubtypeId], references: [id])
+
+    @@map("validation_queue")
+}

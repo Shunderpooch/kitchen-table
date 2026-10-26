@@ -1,0 +1,76 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build output
+.next/
+frontend/.next/
+dist/
+build/
+out/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local virtualenvs / vendored local packages
+.venv/
+venv/
+env/
+vendor_pkgs/
+backend/vendor/
+
+# Databases and local data snapshots
+*.db
+*.sqlite
+*.sqlite3
+data/
+!data/.gitkeep
+frontend/data/
+backend/test_bofa_pdf.db
+
+# Uploaded statements and raw personal financial exports
+uploads/
+*.csv
+*.xlsx
+*.xls
+*.pdf
+
+# Keep docs and intentional markdown tracked
+!README.md
+!HOW_TO_TEST.md
+!IMPLEMENTATION_STRATEGY.md
+!MODULE_OVERVIEW.md
+!skill.md
+
+# Logs and diagnostics
+*.log
+*.err
+*.out
+frontend-dev.log
+frontend-dev.err.log
+frontend-3011.log
+frontend-3011.err.log
+edge-dom.err
+edge-dom.html
+
+# Environment / machine-local config
+.env
+.env.*
+.python-version
+.DS_Store
+Thumbs.db
+
+# Local editor / agent artifacts
+.claude/
+_ul
+
+# Generated (Prisma client, Python package metadata)
+frontend/generated/
+*.egg-info/
+!.env.example
