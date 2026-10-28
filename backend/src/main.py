@@ -28,6 +28,7 @@ from .categorize import (
 )
 from .validate import find_all_duplicates_in_batch
 from .scans.cli import scans as scans_cli
+from .fetch.cli import fetch as fetch_cli
 
 # Force UTF-8 output on Windows
 if sys.platform == 'win32':
@@ -458,6 +459,7 @@ def _seed_statement_sources(session) -> None:
 
 
 cli.add_command(scans_cli)
+cli.add_command(fetch_cli)
 
 
 if __name__ == '__main__':
