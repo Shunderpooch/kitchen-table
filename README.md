@@ -17,6 +17,14 @@ computer; your documents and data never leave it.
 
 Built for one or two people (`HOUSEHOLD_MEMBERS`).
 
+## How it works
+
+![Workflow: scan on any computer, the home PC cuts and names the scans, you review the cuts, documents are filed, receipts are matched to statements or become expenses, you approve and see your spending](docs/images/workflow.svg)
+
+Two steps need you (blue): checking how a scanned stack was cut into
+documents, and approving expenses. Everything else runs in the background on
+the computer that hosts the app.
+
 It is not trying to be a generic budgeting app. It is trying to do a smaller set of things well:
 
 - ingest messy statement data
@@ -354,6 +362,8 @@ document tables.
 
 ### Scan inbox and review dashboard
 
+![The review screen: page thumbnails grouped into documents, cut and join controls, proposed names and folders, documents that need a look, and a large preview](docs/images/review-cuts.svg)
+
 Scan from any computer with ScanSmart saving to `OneDrive\Scans\Inbox`
 (a subfolder named after a person, e.g. `Inbox\Sam`, files them for that
 person). On this PC:
@@ -395,6 +405,8 @@ networks only. The app is plain HTTP with a password: fine at home, not for
 the internet.
 
 ### Every receipt mapped to an expense
+
+![How a receipt becomes an expense: linked to its statement row, staged until its statement arrives and then merged, or staged for you to approve](docs/images/receipt-lifecycle.svg)
 
 ```bash
 python -m backend.src.main scans match-receipts --confirm-above 6   # link receipts to statement rows

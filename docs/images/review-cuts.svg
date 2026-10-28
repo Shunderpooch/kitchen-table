@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" role="img" aria-labelledby="title desc">
+  <title id="title">Reviewing a scanned stack</title>
+  <desc id="desc">A tablet on a wooden table shows the review screen: pages grouped into documents, with sticky notes explaining how to edit a document's name, date and folder, cut between pages, spot documents that need a look, join a document onto the one above, check placement and file, and see a full-size preview.</desc>
+  <defs>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e3bf8f"/><stop offset="0.5" stop-color="#d7ad78"/><stop offset="1" stop-color="#c99a63"/>
+    </linearGradient>
+    <linearGradient id="bezel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4b5563"/><stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9edf2"/>
+    </linearGradient>
+    <linearGradient id="postit" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff3a3"/><stop offset="1" stop-color="#fde047"/>
+    </linearGradient>
+    <linearGradient id="tape" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="1" stop-color="#f1f5f9" stop-opacity="0.75"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#3b2410" flood-opacity="0.4"/>
+    </filter>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="1" dy="3" stdDeviation="2.5" flood-color="#3b2410" flood-opacity="0.35"/>
+    </filter>
+    <marker id="pen" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,1 L9,5 L0,9" fill="none" stroke="#9a3412" stroke-width="1.6" stroke-linecap="round"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+      .heading { font-size: 24px; font-weight: 800; fill: #3b2410; }
+      .hand { font-family: "Segoe Print", "Bradley Hand", "Marker Felt", "Comic Sans MS", cursive; font-size: 14px; fill: #3f2a14; }
+      .handb { font-family: "Segoe Print", "Bradley Hand", "Marker Felt", "Comic Sans MS", cursive; font-size: 15px; font-weight: 700; fill: #3f2a14; }
+      .ui { font-size: 10.5px; fill: #0f172a; }
+      .uim { font-size: 9.5px; fill: #334155; font-family: ui-monospace, Consolas, monospace; }
+      .uis { font-size: 10px; fill: #64748b; }
+      .why { font-size: 10px; fill: #b45309; }
+      .btn { font-size: 9.5px; font-weight: 700; }
+    </style>
+    <g id="thumb">
+      <rect width="34" height="46" rx="2" fill="url(#paper)" stroke="#cbd5e1"/>
+      <rect x="6" y="6" width="18" height="3" rx="1.5" fill="#64748b"/>
+      <rect x="5" y="13" width="24" height="2" rx="1" fill="#cbd5e1"/>
+      <rect x="5" y="18" width="20" height="2" rx="1" fill="#cbd5e1"/>
+      <rect x="5" y="23" width="22" height="2" rx="1" fill="#cbd5e1"/>
+      <rect x="5" y="35" width="24" height="2.5" rx="1" fill="#94a3b8"/>
+    </g>
+    <g id="check">
+      <rect width="10" height="10" rx="2" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+      <path d="M2.2 5.2 L4.3 7.3 L8 2.8" fill="none" stroke="#16a34a" stroke-width="1.6"/>
+    </g>
+  </defs>
+
+  <!-- Table -->
+  <rect width="1000" height="600" rx="18" fill="url(#wood)"/>
+  <g fill="none" stroke="#a87443" stroke-opacity="0.28" stroke-width="1.4">
+    <path d="M0 52 C200 40 380 64 560 50 S860 40 1000 56"/>
+    <path d="M0 160 C180 172 420 146 600 162 S880 174 1000 154"/>
+    <path d="M0 262 C240 250 400 274 640 258 S900 248 1000 268"/>
+    <path d="M0 372 C160 384 380 362 620 378 S860 390 1000 368"/>
+    <path d="M0 478 C220 466 460 490 700 472 S900 466 1000 484"/>
+    <path d="M0 566 C260 554 480 576 720 562 S920 556 1000 570"/>
+  </g>
+  <line x1="0" y1="318" x2="1000" y2="318" stroke="#8a5a2b" stroke-opacity="0.35" stroke-width="2"/>
+  <text class="heading" x="36" y="46">Step 3: you check the cuts before anything is filed</text>
+
+  <!-- Tablet -->
+  <g filter="url(#shadow)">
+    <rect x="222" y="66" width="556" height="512" rx="28" fill="url(#bezel)"/>
+  </g>
+  <rect x="242" y="86" width="516" height="472" rx="6" fill="#f8fafc"/>
+  <circle cx="500" cy="76" r="3" fill="#374151"/>
+
+  <!-- Toolbar -->
+  <rect x="252" y="96" width="496" height="28" rx="6" fill="#ffffff" stroke="#e2e8f0"/>
+  <text class="ui" x="262" y="114">3 documents · <tspan fill="#15803d">2 approved</tspan> · <tspan fill="#b45309">1 to look at</tspan></text>
+  <rect x="604" y="101" width="138" height="18" rx="5" fill="#0369a1"/><text class="btn" x="673" y="113.5" text-anchor="middle" fill="#ffffff">Check placement · File</text>
+
+  <!-- Document A -->
+  <rect x="252" y="134" width="318" height="92" rx="8" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+  <use href="#thumb" x="262" y="146"/>
+  <use href="#check" x="308" y="144"/><text class="ui" x="322" y="153">approve</text>
+  <rect x="372" y="143" width="58" height="14" rx="3" fill="#f1f5f9"/><text class="ui" x="377" y="154">2026-09-21</text>
+  <rect x="434" y="143" width="54" height="14" rx="3" fill="#f1f5f9"/><text class="ui" x="439" y="154">marigold</text>
+  <rect x="492" y="143" width="68" height="14" rx="3" fill="#f1f5f9"/><text class="ui" x="497" y="154">restaurants</text>
+  <text class="uim" x="308" y="180">→ restaurants/2026-09-21_marigold.pdf</text>
+  <text class="uis" x="308" y="200">Marigold / 40 Pine St / Check #12 …</text>
+
+  <!-- Join bar 1 -->
+  <rect x="252" y="232" width="318" height="16" rx="4" fill="none" stroke="#cbd5e1" stroke-dasharray="4 3"/>
+  <text class="uis" x="411" y="243.5" text-anchor="middle">↑ join with the document above</text>
+
+  <!-- Document B (needs a look) -->
+  <rect x="252" y="254" width="318" height="124" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+  <use href="#thumb" x="262" y="266"/>
+  <text x="298" y="294" font-size="13" fill="#dc2626">✂</text>
+  <use href="#thumb" x="314" y="266"/>
+  <rect x="358" y="264" width="10" height="10" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/><text class="ui" x="372" y="273">approve</text>
+  <rect x="420" y="262" width="58" height="14" rx="3" fill="#ffffff"/><text class="ui" x="425" y="273">2026-09-12</text>
+  <rect x="482" y="262" width="78" height="14" rx="3" fill="#ffffff"/><text class="ui" x="487" y="273">noodle_house</text>
+  <text class="uim" x="358" y="298">→ restaurants/2026-09-12_noodle…</text>
+  <text class="why" x="358" y="324">Why to look: page 3 joined on</text>
+  <text class="why" x="358" y="338">weak evidence (no store header).</text>
+  <text class="uis" x="358" y="362">Name and date re-read after a cut.</text>
+
+  <!-- Join bar 2 -->
+  <rect x="252" y="384" width="318" height="16" rx="4" fill="none" stroke="#cbd5e1" stroke-dasharray="4 3"/>
+  <text class="uis" x="411" y="395.5" text-anchor="middle">↑ join with the document above</text>
+
+  <!-- Document C -->
+  <rect x="252" y="406" width="318" height="92" rx="8" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+  <use href="#thumb" x="262" y="418"/>
+  <use href="#check" x="308" y="416"/><text class="ui" x="322" y="425">approve</text>
+  <rect x="372" y="415" width="58" height="14" rx="3" fill="#f1f5f9"/><text class="ui" x="377" y="426">2026-09-19</text>
+  <rect x="434" y="415" width="66" height="14" rx="3" fill="#f1f5f9"/><text class="ui" x="439" y="426">corner_cafe</text>
+  <rect x="504" y="415" width="34" height="14" rx="3" fill="#f1f5f9"/><text class="ui" x="509" y="426">cafe</text>
+  <text class="uim" x="308" y="452">→ cafe/2026-09-19_corner_cafe.pdf</text>
+  <text class="uis" x="308" y="472">Corner Cafe / Riverton / 11:02 AM …</text>
+
+  <!-- Preview -->
+  <rect x="580" y="134" width="168" height="414" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text class="uis" x="590" y="152">noodle_house · 2 pages</text>
+  <rect x="594" y="162" width="140" height="372" rx="3" fill="url(#paper)" stroke="#cbd5e1"/>
+  <rect x="624" y="182" width="80" height="9" rx="3" fill="#475569"/>
+  <rect x="634" y="198" width="60" height="4" rx="2" fill="#cbd5e1"/>
+  <g fill="#e2e8f0">
+    <rect x="606" y="222" width="80" height="4" rx="2"/><rect x="700" y="222" width="22" height="4" rx="2"/>
+    <rect x="606" y="236" width="66" height="4" rx="2"/><rect x="700" y="236" width="22" height="4" rx="2"/>
+    <rect x="606" y="250" width="86" height="4" rx="2"/><rect x="700" y="250" width="22" height="4" rx="2"/>
+    <rect x="606" y="264" width="60" height="4" rx="2"/><rect x="700" y="264" width="22" height="4" rx="2"/>
+  </g>
+  <rect x="606" y="284" width="116" height="1.2" fill="#cbd5e1"/>
+  <rect x="606" y="294" width="40" height="5" rx="2" fill="#94a3b8"/><rect x="694" y="294" width="28" height="5" rx="2" fill="#94a3b8"/>
+  <g fill="#e2e8f0">
+    <rect x="606" y="320" width="100" height="4" rx="2"/><rect x="606" y="334" width="76" height="4" rx="2"/><rect x="606" y="348" width="92" height="4" rx="2"/>
+  </g>
+
+  <!-- Sticky notes, left -->
+  <g transform="translate(30 92) rotate(-4)" filter="url(#soft)">
+    <rect width="170" height="88" fill="url(#postit)"/>
+    <rect x="58" y="-8" width="54" height="16" fill="url(#tape)" transform="rotate(3 85 0)"/>
+    <text class="handb" x="12" y="30">Fix the name</text>
+    <text class="hand" x="12" y="52">date, folder, person,</text>
+    <text class="hand" x="12" y="72">or approve as is</text>
+  </g>
+  <g transform="translate(36 206) rotate(3)" filter="url(#soft)">
+    <rect width="160" height="80" fill="url(#postit)"/>
+    <rect x="52" y="-8" width="54" height="16" fill="url(#tape)" transform="rotate(-4 79 0)"/>
+    <text class="handb" x="12" y="30">✂ Cut here</text>
+    <text class="hand" x="12" y="54">the next page starts</text>
+    <text class="hand" x="12" y="72">a new document</text>
+  </g>
+  <g transform="translate(26 312) rotate(-2)" filter="url(#soft)">
+    <rect width="170" height="80" fill="url(#postit)"/>
+    <rect x="58" y="-8" width="54" height="16" fill="url(#tape)" transform="rotate(2 85 0)"/>
+    <text class="handb" x="12" y="30">Amber = look</text>
+    <text class="hand" x="12" y="54">and it tells you why</text>
+  </g>
+  <g transform="translate(34 418) rotate(4)" filter="url(#soft)">
+    <rect width="160" height="80" fill="url(#postit)"/>
+    <rect x="52" y="-8" width="54" height="16" fill="url(#tape)" transform="rotate(-3 79 0)"/>
+    <text class="handb" x="12" y="30">Join</text>
+    <text class="hand" x="12" y="54">onto the document</text>
+    <text class="hand" x="12" y="72">above it</text>
+  </g>
+
+  <!-- Sticky notes, right -->
+  <g transform="translate(806 112) rotate(4)" filter="url(#soft)">
+    <rect width="166" height="80" fill="url(#postit)"/>
+    <rect x="56" y="-8" width="54" height="16" fill="url(#tape)" transform="rotate(-3 83 0)"/>
+    <text class="handb" x="12" y="30">Then file it</text>
+    <text class="hand" x="12" y="54">nothing is filed</text>
+    <text class="hand" x="12" y="72">before you say so</text>
+  </g>
+  <g transform="translate(804 330) rotate(-3)" filter="url(#soft)">
+    <rect width="166" height="80" fill="url(#postit)"/>
+    <rect x="56" y="-8" width="54" height="16" fill="url(#tape)" transform="rotate(4 83 0)"/>
+    <text class="handb" x="12" y="30">Full-size page</text>
+    <text class="hand" x="12" y="54">of the document</text>
+    <text class="hand" x="12" y="72">you clicked</text>
+  </g>
+
+  <!-- Pen arrows -->
+  <g fill="none" stroke="#9a3412" stroke-width="2.2" stroke-linecap="round" marker-end="url(#pen)">
+    <path d="M196 120 C250 112 300 128 366 146"/>
+    <path d="M194 236 C240 250 262 270 292 286"/>
+    <path d="M194 338 C222 336 238 330 250 326"/>
+    <path d="M192 450 C226 440 240 412 250 400"/>
+    <path d="M808 134 C780 116 762 108 746 110"/>
+    <path d="M806 366 C786 360 770 356 748 356"/>
+  </g>
+</svg>

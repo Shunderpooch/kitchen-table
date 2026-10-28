@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580" role="img" aria-labelledby="title desc">
+  <title id="title">How a receipt becomes an expense</title>
+  <desc id="desc">On a wooden table, a receipt reaches a sticky note asking whether there is a card statement row for it. Yes: it is paper-clipped to its statement row. Not yet: it waits as a staged expense until the statement arrives in the mail, then the two are stapled together, keeping the statement's amount and your category. Never, for cash or older years: it becomes a staged expense that you stamp approved.</desc>
+  <defs>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e3bf8f"/><stop offset="0.5" stop-color="#d7ad78"/><stop offset="1" stop-color="#c99a63"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9edf2"/>
+    </linearGradient>
+    <linearGradient id="postit" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff3a3"/><stop offset="1" stop-color="#fde047"/>
+    </linearGradient>
+    <linearGradient id="tape" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="1" stop-color="#f1f5f9" stop-opacity="0.75"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3f4f6"/><stop offset="0.45" stop-color="#d1d5db"/><stop offset="1" stop-color="#9ca3af"/>
+    </linearGradient>
+    <linearGradient id="envelope" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbf3e2"/><stop offset="1" stop-color="#ead9b8"/>
+    </linearGradient>
+    <linearGradient id="bill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#bfe3c0"/><stop offset="1" stop-color="#7fb985"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#b7791f"/><stop offset="0.5" stop-color="#f6d365"/><stop offset="1" stop-color="#b7791f"/>
+    </linearGradient>
+    <linearGradient id="handle" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7c4a1e"/><stop offset="0.5" stop-color="#b9824a"/><stop offset="1" stop-color="#7c4a1e"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="1" dy="4" stdDeviation="3.5" flood-color="#3b2410" flood-opacity="0.38"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b3a1d"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+      .heading { font-size: 24px; font-weight: 800; fill: #3b2410; }
+      .hand { font-family: "Segoe Print", "Bradley Hand", "Marker Felt", "Comic Sans MS", cursive; font-size: 14px; fill: #3f2a14; }
+      .handb { font-family: "Segoe Print", "Bradley Hand", "Marker Felt", "Comic Sans MS", cursive; font-size: 15px; font-weight: 700; fill: #3f2a14; }
+      .branch { font-family: "Segoe Print", "Bradley Hand", "Marker Felt", "Comic Sans MS", cursive; font-size: 15px; font-weight: 700; fill: #4a2c12; }
+      .strip { font-size: 13px; font-weight: 700; fill: #1f2937; }
+      .stripc { font-size: 12px; fill: #4b5563; }
+    </style>
+
+    <!-- Receipt with a torn edge, 60x96 -->
+    <g id="receipt">
+      <path d="M0 0 H60 V90 L55 96 L50 90 L45 96 L40 90 L35 96 L30 90 L25 96 L20 90 L15 96 L10 90 L5 96 L0 92 Z" fill="url(#paper)" stroke="#cbd5e1"/>
+      <rect x="15" y="8" width="30" height="5" rx="2" fill="#475569"/>
+      <g fill="#cbd5e1">
+        <rect x="8" y="22" width="30" height="2.5" rx="1"/><rect x="43" y="22" width="9" height="2.5" rx="1"/>
+        <rect x="8" y="30" width="26" height="2.5" rx="1"/><rect x="43" y="30" width="9" height="2.5" rx="1"/>
+        <rect x="8" y="38" width="28" height="2.5" rx="1"/><rect x="43" y="38" width="9" height="2.5" rx="1"/>
+      </g>
+      <rect x="8" y="52" width="20" height="4" rx="1.5" fill="#15803d"/><rect x="39" y="52" width="13" height="4" rx="1.5" fill="#15803d"/>
+      <rect x="12" y="68" width="36" height="8" rx="1" fill="none" stroke="#94a3b8" stroke-dasharray="1.5 1.5"/>
+    </g>
+    <!-- Card statement, 80x100 -->
+    <g id="statement">
+      <rect width="80" height="100" rx="3" fill="url(#paper)" stroke="#cbd5e1"/>
+      <rect width="80" height="15" rx="3" fill="#1e3a8a"/>
+      <rect x="7" y="5" width="28" height="5" rx="2" fill="#93c5fd"/>
+      <g fill="#cbd5e1">
+        <rect x="7" y="24" width="42" height="3" rx="1.5"/><rect x="58" y="24" width="15" height="3" rx="1.5"/>
+        <rect x="7" y="34" width="36" height="3" rx="1.5"/><rect x="58" y="34" width="15" height="3" rx="1.5"/>
+        <rect x="7" y="58" width="40" height="3" rx="1.5"/><rect x="58" y="58" width="15" height="3" rx="1.5"/>
+        <rect x="7" y="68" width="34" height="3" rx="1.5"/><rect x="58" y="68" width="15" height="3" rx="1.5"/>
+        <rect x="7" y="78" width="38" height="3" rx="1.5"/><rect x="58" y="78" width="15" height="3" rx="1.5"/>
+      </g>
+      <rect x="3" y="42" width="74" height="11" rx="2" fill="#bbf7d0" stroke="#16a34a"/>
+      <rect x="7" y="46" width="36" height="3" rx="1.5" fill="#15803d"/><rect x="58" y="46" width="15" height="3" rx="1.5" fill="#15803d"/>
+    </g>
+    <!-- Index card for a staged expense, 104x66 -->
+    <g id="indexcard">
+      <rect width="104" height="66" rx="3" fill="#fffdf8" stroke="#e5dccb"/>
+      <line x1="0" y1="16" x2="104" y2="16" stroke="#f87171" stroke-width="1.2"/>
+      <g stroke="#bfdbfe" stroke-width="1"><line x1="0" y1="30" x2="104" y2="30"/><line x1="0" y1="44" x2="104" y2="44"/><line x1="0" y1="58" x2="104" y2="58"/></g>
+      <text class="hand" x="8" y="12" font-size="10">Expense</text>
+      <text class="hand" x="8" y="27" font-size="10">$42.10</text>
+      <text class="hand" x="8" y="41" font-size="10">groceries</text>
+    </g>
+  </defs>
+
+  <!-- Table -->
+  <rect width="1000" height="580" rx="18" fill="url(#wood)"/>
+  <g fill="none" stroke="#a87443" stroke-opacity="0.28" stroke-width="1.4">
+    <path d="M0 52 C200 40 380 64 560 50 S860 40 1000 56"/>
+    <path d="M0 150 C180 162 420 136 600 152 S880 164 1000 144"/>
+    <path d="M0 246 C240 234 400 258 640 242 S900 232 1000 252"/>
+    <path d="M0 356 C160 368 380 346 620 362 S860 374 1000 352"/>
+    <path d="M0 452 C220 440 460 464 700 446 S900 440 1000 458"/>
+    <path d="M0 548 C260 536 480 558 720 544 S920 538 1000 552"/>
+  </g>
+  <line x1="0" y1="212" x2="1000" y2="212" stroke="#8a5a2b" stroke-opacity="0.35" stroke-width="2"/>
+  <line x1="0" y1="398" x2="1000" y2="398" stroke="#8a5a2b" stroke-opacity="0.35" stroke-width="2"/>
+  <text class="heading" x="36" y="46">Step 5: every receipt ends up as an expense</text>
+
+  <!-- Start: a receipt -->
+  <g transform="translate(44 232) rotate(-6) scale(1.25)" filter="url(#soft)"><use href="#receipt"/></g>
+  <path d="M128 296 H160" fill="none" stroke="#5b3a1d" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round" marker-end="url(#arrow)"/>
+
+  <!-- Question sticky note -->
+  <g transform="translate(168 246) rotate(3)" filter="url(#soft)">
+    <rect width="150" height="96" fill="url(#postit)"/>
+    <rect x="48" y="-8" width="54" height="16" fill="url(#tape)" transform="rotate(-3 75 0)"/>
+    <text class="handb" x="12" y="32">Is there a card</text>
+    <text class="handb" x="12" y="54">statement row</text>
+    <text class="handb" x="12" y="76">for it?</text>
+  </g>
+
+  <!-- Branches -->
+  <g fill="none" stroke="#5b3a1d" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round">
+    <path d="M326 270 C368 270 360 132 404 132" marker-end="url(#arrow)"/>
+    <path d="M326 300 H404" marker-end="url(#arrow)"/>
+    <path d="M326 328 C368 328 360 476 404 476" marker-end="url(#arrow)"/>
+  </g>
+  <text class="branch" x="352" y="176">yes</text>
+  <text class="branch" x="338" y="290">not yet</text>
+  <text class="branch" x="350" y="440">never</text>
+
+  <!-- Row 1: yes -->
+  <g transform="translate(470 74) rotate(4)" filter="url(#soft)"><use href="#statement"/></g>
+  <g transform="translate(424 84) rotate(-7)" filter="url(#soft)"><use href="#receipt"/></g>
+  <path d="M470 76 V114 a8 8 0 0 0 16 0 V80 a5 5 0 0 0 -10 0 V110" fill="none" stroke="url(#metal)" stroke-width="3.5" stroke-linecap="round" filter="url(#soft)"/>
+  <g transform="translate(584 108)" filter="url(#soft)">
+    <rect width="372" height="54" rx="3" fill="#fffdf8"/>
+    <text class="strip" x="14" y="22">Clipped to its statement row</text>
+    <text class="stripc" x="14" y="41">Matched by amount (tip too), date, store, and card digits.</text>
+  </g>
+
+  <!-- Row 2: not yet -->
+  <g transform="translate(414 262) rotate(-4)" filter="url(#soft)"><use href="#indexcard"/></g>
+  <path d="M530 300 H566" fill="none" stroke="#5b3a1d" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round" marker-end="url(#arrow)"/>
+  <!-- envelope with the statement -->
+  <g transform="translate(580 252)" filter="url(#soft)">
+    <g transform="translate(18 -26) rotate(-3) scale(0.8)"><use href="#statement"/></g>
+    <rect y="22" width="112" height="70" rx="4" fill="url(#envelope)" stroke="#cdb48a"/>
+    <path d="M0 26 L56 62 L112 26" fill="none" stroke="#cdb48a" stroke-width="1.5"/>
+    <path d="M0 92 L44 56 M112 92 L68 56" fill="none" stroke="#dcc79f" stroke-width="1.2"/>
+    <rect x="80" y="30" width="22" height="16" rx="1" fill="#fca5a5" stroke="#ef4444" stroke-dasharray="2 1.5"/>
+  </g>
+  <path d="M704 300 H740" fill="none" stroke="#5b3a1d" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round" marker-end="url(#arrow)"/>
+  <!-- stapled pair with a seal -->
+  <g transform="translate(800 248) rotate(3)" filter="url(#soft)"><use href="#statement"/></g>
+  <g transform="translate(762 252) rotate(-5)" filter="url(#soft)"><use href="#receipt"/></g>
+  <rect x="790" y="258" width="22" height="4" rx="1" fill="url(#metal)" stroke="#6b7280" stroke-width="0.6" transform="rotate(-12 801 260)"/>
+  <g filter="url(#soft)">
+    <circle cx="882" cy="336" r="20" fill="#16a34a"/>
+    <circle cx="882" cy="336" r="15" fill="none" stroke="#bbf7d0" stroke-width="1.2" stroke-dasharray="2 2"/>
+    <path d="M874 336 L880 342 L891 330" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g filter="url(#soft)">
+    <rect x="404" y="350" width="140" height="26" rx="3" fill="#fffdf8"/><text class="strip" x="414" y="368">Staged now</text>
+    <rect x="566" y="350" width="150" height="26" rx="3" fill="#fffdf8"/><text class="strip" x="576" y="368">Statement arrives</text>
+    <rect x="740" y="364" width="230" height="44" rx="3" fill="#fffdf8"/>
+    <text class="strip" x="750" y="382">Merged</text>
+    <text class="stripc" x="750" y="399">its amount, date, card + your category</text>
+  </g>
+
+  <!-- Row 3: never -->
+  <g transform="translate(410 434) rotate(-6)" filter="url(#soft)">
+    <rect width="104" height="50" rx="4" fill="url(#bill)" stroke="#4d7c57"/>
+    <rect x="6" y="6" width="92" height="38" rx="3" fill="none" stroke="#4d7c57" stroke-width="1"/>
+    <ellipse cx="52" cy="25" rx="14" ry="16" fill="#e6f4e6" stroke="#4d7c57"/>
+    <text x="52" y="31" text-anchor="middle" font-size="16" font-weight="800" fill="#2f5d3a">$</text>
+  </g>
+  <g filter="url(#soft)">
+    <ellipse cx="510" cy="494" rx="16" ry="6" fill="#b7791f"/><rect x="494" y="484" width="32" height="10" fill="url(#gold)"/><ellipse cx="510" cy="484" rx="16" ry="6" fill="#fde68a" stroke="#d69e2e"/>
+  </g>
+  <path d="M540 476 H570" fill="none" stroke="#5b3a1d" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round" marker-end="url(#arrow)"/>
+  <g transform="translate(584 444) rotate(3)" filter="url(#soft)"><use href="#indexcard"/></g>
+  <path d="M700 476 H730" fill="none" stroke="#5b3a1d" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round" marker-end="url(#arrow)"/>
+  <!-- approved stamp -->
+  <g transform="translate(748 446) rotate(-8)">
+    <rect width="124" height="46" rx="6" fill="#fffdf8" stroke="#dc2626" stroke-width="3"/>
+    <rect x="5" y="5" width="114" height="36" rx="4" fill="none" stroke="#dc2626" stroke-width="1.2"/>
+    <text x="62" y="30" text-anchor="middle" font-size="18" font-weight="900" letter-spacing="0.12em" fill="#dc2626" opacity="0.9">APPROVED</text>
+  </g>
+  <g transform="translate(888 408)" filter="url(#soft)">
+    <ellipse cx="30" cy="10" rx="16" ry="12" fill="url(#handle)"/>
+    <rect x="24" y="16" width="12" height="34" fill="url(#handle)"/>
+    <rect x="4" y="48" width="52" height="14" rx="3" fill="url(#handle)"/>
+    <rect x="6" y="60" width="48" height="7" rx="2" fill="#b91c1c"/>
+  </g>
+  <g filter="url(#soft)">
+    <rect x="404" y="522" width="170" height="26" rx="3" fill="#fffdf8"/><text class="strip" x="414" y="540">Cash, or older years</text>
+    <rect x="584" y="522" width="120" height="26" rx="3" fill="#fffdf8"/><text class="strip" x="594" y="540">Staged</text>
+    <rect x="740" y="522" width="230" height="26" rx="3" fill="#fffdf8"/><text class="strip" x="750" y="540">You approve, receipt beside it</text>
+  </g>
+</svg>

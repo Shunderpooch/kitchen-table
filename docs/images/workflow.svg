@@ -1,0 +1,302 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" role="img" aria-labelledby="title desc">
+  <title id="title">Kitchen Table workflow</title>
+  <desc id="desc">Six steps laid out as cards on a wooden table: scan a stack on any computer; the home PC cuts and names it; you review the cuts on a tablet; documents are filed into folders; receipts are clipped to their card statement rows or become expenses; you approve and see your spending on a dashboard.</desc>
+  <defs>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e3bf8f"/>
+      <stop offset="0.5" stop-color="#d7ad78"/>
+      <stop offset="1" stop-color="#c99a63"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffdf8"/>
+      <stop offset="1" stop-color="#f5efe3"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e9edf2"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3f4f6"/>
+      <stop offset="0.45" stop-color="#d1d5db"/>
+      <stop offset="1" stop-color="#9ca3af"/>
+    </linearGradient>
+    <linearGradient id="darkMetal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6b7280"/>
+      <stop offset="1" stop-color="#374151"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0f9ff"/>
+      <stop offset="1" stop-color="#dbeafe"/>
+    </linearGradient>
+    <linearGradient id="bezel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4b5563"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="manila" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6d98f"/>
+      <stop offset="1" stop-color="#e2b65c"/>
+    </linearGradient>
+    <linearGradient id="drawer" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9aa5b1"/>
+      <stop offset="1" stop-color="#5f6b78"/>
+    </linearGradient>
+    <linearGradient id="kraft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d9a066"/>
+      <stop offset="1" stop-color="#b9824a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#b7791f"/>
+      <stop offset="0.5" stop-color="#f6d365"/>
+      <stop offset="1" stop-color="#b7791f"/>
+    </linearGradient>
+    <linearGradient id="you" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#0369a1"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#3b2410" flood-opacity="0.35"/>
+    </filter>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#1f2937" flood-opacity="0.3"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b3a1d"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+      .heading { font-size: 24px; font-weight: 800; fill: #3b2410; }
+      .label { font-size: 18px; font-weight: 700; fill: #1f2937; }
+      .caption { font-size: 13px; fill: #4b5563; }
+      .num { font-size: 13px; font-weight: 800; fill: #ffffff; }
+      .you { font-size: 11px; font-weight: 800; fill: #ffffff; letter-spacing: 0.08em; }
+    </style>
+
+    <!-- A sheet of paper with text lines, 40x52 -->
+    <g id="sheet">
+      <rect width="40" height="52" rx="2" fill="url(#paper)" stroke="#cbd5e1"/>
+      <rect x="6" y="7" width="20" height="3.5" rx="1.5" fill="#64748b"/>
+      <rect x="6" y="15" width="28" height="2" rx="1" fill="#cbd5e1"/>
+      <rect x="6" y="21" width="24" height="2" rx="1" fill="#cbd5e1"/>
+      <rect x="6" y="27" width="27" height="2" rx="1" fill="#cbd5e1"/>
+      <rect x="6" y="40" width="28" height="2.5" rx="1" fill="#94a3b8"/>
+    </g>
+  </defs>
+
+  <!-- The table -->
+  <rect width="1000" height="600" rx="18" fill="url(#wood)"/>
+  <g fill="none" stroke="#a87443" stroke-opacity="0.28" stroke-width="1.4">
+    <path d="M0 40 C200 30 380 55 560 42 S860 30 1000 46"/>
+    <path d="M0 118 C180 130 420 104 600 120 S880 132 1000 112"/>
+    <path d="M0 214 C240 202 400 226 640 210 S900 200 1000 220"/>
+    <path d="M0 300 C160 312 380 290 620 306 S860 318 1000 296"/>
+    <path d="M0 392 C220 380 460 404 700 386 S900 380 1000 398"/>
+    <path d="M0 470 C200 482 430 458 650 474 S880 486 1000 466"/>
+    <path d="M0 552 C260 540 480 562 720 548 S920 542 1000 556"/>
+    <ellipse cx="840" cy="90" rx="22" ry="7"/><ellipse cx="840" cy="90" rx="12" ry="3.5"/>
+    <ellipse cx="170" cy="440" rx="26" ry="8"/><ellipse cx="170" cy="440" rx="14" ry="4"/>
+  </g>
+  <g stroke="#8a5a2b" stroke-opacity="0.35" stroke-width="2">
+    <line x1="0" y1="258" x2="1000" y2="258"/>
+    <line x1="0" y1="512" x2="1000" y2="512"/>
+  </g>
+  <text class="heading" x="36" y="48">From a pile of paper to your household's spending</text>
+
+  <!-- Path between cards -->
+  <g fill="none" stroke="#5b3a1d" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round">
+    <path d="M318 175 H346" marker-end="url(#arrow)"/>
+    <path d="M654 175 H682" marker-end="url(#arrow)"/>
+    <path d="M836 282 C836 316 820 322 760 322 H240 C180 322 164 328 164 346" marker-end="url(#arrow)"/>
+    <path d="M318 455 H346" marker-end="url(#arrow)"/>
+    <path d="M654 455 H682" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- ============ 1. Scan ============ -->
+  <g transform="translate(28 70) rotate(-1.2 145 105)" filter="url(#shadow)">
+    <rect width="290" height="210" rx="10" fill="url(#card)" stroke="#e7dcc6"/>
+  </g>
+  <g transform="translate(28 70)">
+    <!-- paper stack feeding in -->
+    <g transform="translate(118 10) rotate(-8)"><use href="#sheet"/></g>
+    <g transform="translate(124 6) rotate(-2)"><use href="#sheet"/></g>
+    <g transform="translate(130 4) rotate(5)"><use href="#sheet"/></g>
+    <!-- scanner -->
+    <g filter="url(#soft)">
+      <path d="M78 52 H212 L222 74 H68 Z" fill="url(#metal)" stroke="#9ca3af"/>
+      <rect x="66" y="72" width="158" height="44" rx="9" fill="url(#metal)" stroke="#9ca3af"/>
+      <rect x="66" y="98" width="158" height="18" rx="6" fill="url(#darkMetal)"/>
+      <rect x="96" y="76" width="98" height="4" rx="2" fill="#1f2937"/>
+      <circle cx="206" cy="88" r="4" fill="#22c55e"/>
+      <circle cx="206" cy="88" r="7" fill="#22c55e" opacity="0.25"/>
+      <rect x="182" y="84" width="14" height="8" rx="2" fill="#e5e7eb" stroke="#9ca3af"/>
+      <!-- page coming out -->
+      <rect x="112" y="112" width="66" height="10" rx="2" fill="url(#paper)" stroke="#cbd5e1"/>
+    </g>
+    <circle cx="26" cy="26" r="13" fill="#7c5a35"/><text class="num" x="26" y="31" text-anchor="middle">1</text>
+    <text class="label" x="24" y="164">Scan</text>
+    <text class="caption" x="24" y="186">Any computer, any stack: receipts,</text>
+    <text class="caption" x="24" y="203">bills, manuals. Saved to Scans\Inbox.</text>
+  </g>
+
+  <!-- ============ 2. Cut and name ============ -->
+  <g transform="translate(360 70) rotate(0.8 145 105)" filter="url(#shadow)">
+    <rect width="290" height="210" rx="10" fill="url(#card)" stroke="#e7dcc6"/>
+  </g>
+  <g transform="translate(360 70)">
+    <!-- three separate documents -->
+    <g filter="url(#soft)">
+      <g transform="translate(64 26) rotate(-9)"><use href="#sheet"/></g>
+      <g transform="translate(118 18)"><use href="#sheet"/></g>
+      <g transform="translate(168 24) rotate(8)"><use href="#sheet"/></g>
+    </g>
+    <!-- scissors -->
+    <g transform="translate(100 60) rotate(-28)" filter="url(#soft)">
+      <path d="M0 0 L46 -6 L48 -2 L4 6 Z" fill="url(#metal)" stroke="#6b7280" stroke-width="0.8"/>
+      <path d="M0 8 L46 14 L44 18 L2 12 Z" fill="url(#metal)" stroke="#6b7280" stroke-width="0.8"/>
+      <circle cx="0" cy="4" r="2" fill="#4b5563"/>
+      <ellipse cx="-14" cy="-6" rx="10" ry="7" fill="none" stroke="#dc2626" stroke-width="4.5"/>
+      <ellipse cx="-14" cy="14" rx="10" ry="7" fill="none" stroke="#dc2626" stroke-width="4.5"/>
+    </g>
+    <!-- name tag -->
+    <g transform="translate(196 70) rotate(12)" filter="url(#soft)">
+      <path d="M0 8 L8 0 H46 V30 H8 L0 22 Z" fill="url(#kraft)" stroke="#9a6a3a"/>
+      <circle cx="9" cy="15" r="3" fill="#fffdf8" stroke="#9a6a3a"/>
+      <path d="M9 15 C-6 4 -14 22 -24 10" fill="none" stroke="#7c5a35" stroke-width="1.5"/>
+      <rect x="16" y="9" width="24" height="3" rx="1.5" fill="#5b3a1d" opacity="0.7"/>
+      <rect x="16" y="17" width="18" height="3" rx="1.5" fill="#5b3a1d" opacity="0.5"/>
+    </g>
+    <circle cx="26" cy="26" r="13" fill="#7c5a35"/><text class="num" x="26" y="31" text-anchor="middle">2</text>
+    <text class="label" x="24" y="164">Cut and name</text>
+    <text class="caption" x="24" y="186">The home PC reads the stack, cuts it</text>
+    <text class="caption" x="24" y="203">into documents, and names each one.</text>
+  </g>
+
+  <!-- ============ 3. Review ============ -->
+  <g transform="translate(692 70) rotate(-0.8 145 105)" filter="url(#shadow)">
+    <rect width="290" height="210" rx="10" fill="url(#card)" stroke="#e7dcc6"/>
+  </g>
+  <g transform="translate(692 70)">
+    <g filter="url(#soft)">
+      <rect x="62" y="14" width="168" height="112" rx="12" fill="url(#bezel)"/>
+      <rect x="72" y="23" width="148" height="94" rx="4" fill="url(#screen)"/>
+      <circle cx="225" cy="70" r="2" fill="#6b7280"/>
+    </g>
+    <!-- thumbnails on screen -->
+    <g transform="translate(82 36) scale(0.62)"><use href="#sheet"/></g>
+    <text x="113" y="62" font-size="14" fill="#dc2626">✂</text>
+    <g transform="translate(128 36) scale(0.62)"><use href="#sheet"/></g>
+    <g transform="translate(174 36) scale(0.62)"><use href="#sheet"/></g>
+    <rect x="82" y="78" width="70" height="6" rx="3" fill="#bae6fd"/>
+    <rect x="82" y="90" width="100" height="6" rx="3" fill="#bae6fd"/>
+    <rect x="82" y="102" width="50" height="8" rx="4" fill="#0284c7"/>
+    <!-- check badge -->
+    <g filter="url(#soft)">
+      <circle cx="226" cy="22" r="15" fill="#16a34a"/>
+      <path d="M219 22 L224 27 L233 16" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <circle cx="26" cy="26" r="13" fill="#7c5a35"/><text class="num" x="26" y="31" text-anchor="middle">3</text>
+    <rect x="232" y="146" width="40" height="18" rx="9" fill="url(#you)"/><text class="you" x="252" y="159" text-anchor="middle">YOU</text>
+    <text class="label" x="24" y="164">Review the cuts</text>
+    <text class="caption" x="24" y="186">From any device at home: fix a cut</text>
+    <text class="caption" x="24" y="203">in one click, approve. Then it's filed.</text>
+  </g>
+
+  <!-- ============ 4. File ============ -->
+  <g transform="translate(28 350) rotate(0.9 145 105)" filter="url(#shadow)">
+    <rect width="290" height="210" rx="10" fill="url(#card)" stroke="#e7dcc6"/>
+  </g>
+  <g transform="translate(28 350)">
+    <!-- folders standing in a drawer -->
+    <g filter="url(#soft)">
+      <path d="M78 34 H108 L114 26 H140 L146 34 H212 V96 H78 Z" fill="url(#manila)" stroke="#c99a3e"/>
+      <path d="M72 46 H150 L156 38 H184 L190 46 H218 V100 H72 Z" fill="url(#manila)" stroke="#c99a3e"/>
+      <g transform="translate(122 8) rotate(6)"><use href="#sheet"/></g>
+      <path d="M66 58 H96 L102 50 H130 L136 58 H224 V104 H66 Z" fill="url(#manila)" stroke="#c99a3e"/>
+      <rect x="56" y="78" width="178" height="44" rx="6" fill="url(#drawer)" stroke="#4b5563"/>
+      <rect x="120" y="92" width="50" height="12" rx="6" fill="url(#metal)" stroke="#6b7280"/>
+      <rect x="132" y="84" width="26" height="6" rx="1" fill="#f8fafc" stroke="#9ca3af"/>
+    </g>
+    <circle cx="26" cy="26" r="13" fill="#7c5a35"/><text class="num" x="26" y="31" text-anchor="middle">4</text>
+    <text class="label" x="24" y="164">File</text>
+    <text class="caption" x="24" y="186">One dated PDF per document, in your</text>
+    <text class="caption" x="24" y="203">folders, its text kept for search.</text>
+  </g>
+
+  <!-- ============ 5. Match ============ -->
+  <g transform="translate(360 350) rotate(-0.9 145 105)" filter="url(#shadow)">
+    <rect width="290" height="210" rx="10" fill="url(#card)" stroke="#e7dcc6"/>
+  </g>
+  <g transform="translate(360 350)">
+    <!-- card statement -->
+    <g transform="translate(134 14) rotate(4)" filter="url(#soft)">
+      <rect width="86" height="108" rx="3" fill="url(#paper)" stroke="#cbd5e1"/>
+      <rect width="86" height="16" rx="3" fill="#1e3a8a"/>
+      <rect x="8" y="5" width="30" height="5" rx="2" fill="#93c5fd"/>
+      <g fill="#cbd5e1">
+        <rect x="8" y="26" width="46" height="3" rx="1.5"/><rect x="62" y="26" width="16" height="3" rx="1.5"/>
+        <rect x="8" y="36" width="40" height="3" rx="1.5"/><rect x="62" y="36" width="16" height="3" rx="1.5"/>
+        <rect x="8" y="56" width="44" height="3" rx="1.5"/><rect x="62" y="56" width="16" height="3" rx="1.5"/>
+        <rect x="8" y="66" width="36" height="3" rx="1.5"/><rect x="62" y="66" width="16" height="3" rx="1.5"/>
+        <rect x="8" y="76" width="42" height="3" rx="1.5"/><rect x="62" y="76" width="16" height="3" rx="1.5"/>
+      </g>
+      <rect x="4" y="43" width="78" height="11" rx="2" fill="#bbf7d0" stroke="#16a34a"/>
+      <rect x="8" y="47" width="38" height="3" rx="1.5" fill="#15803d"/><rect x="62" y="47" width="16" height="3" rx="1.5" fill="#15803d"/>
+    </g>
+    <!-- receipt with torn edge -->
+    <g transform="translate(66 20) rotate(-7)" filter="url(#soft)">
+      <path d="M0 0 H58 V92 L52 98 L46 92 L40 98 L34 92 L28 98 L22 92 L16 98 L10 92 L4 98 L0 94 Z" fill="url(#paper)" stroke="#cbd5e1"/>
+      <rect x="14" y="8" width="30" height="5" rx="2" fill="#475569"/>
+      <g fill="#cbd5e1">
+        <rect x="8" y="22" width="30" height="2.5" rx="1"/><rect x="42" y="22" width="9" height="2.5" rx="1"/>
+        <rect x="8" y="30" width="26" height="2.5" rx="1"/><rect x="42" y="30" width="9" height="2.5" rx="1"/>
+        <rect x="8" y="38" width="28" height="2.5" rx="1"/><rect x="42" y="38" width="9" height="2.5" rx="1"/>
+      </g>
+      <rect x="8" y="52" width="20" height="4" rx="1.5" fill="#15803d"/><rect x="38" y="52" width="13" height="4" rx="1.5" fill="#15803d"/>
+      <rect x="8" y="66" width="42" height="2" rx="1" fill="#e2e8f0"/>
+      <rect x="12" y="74" width="34" height="8" rx="1" fill="none" stroke="#94a3b8" stroke-dasharray="1.5 1.5"/>
+    </g>
+    <!-- paperclip -->
+    <path d="M128 18 V58 a8 8 0 0 0 16 0 V22 a5 5 0 0 0 -10 0 V54" fill="none" stroke="url(#metal)" stroke-width="3.5" stroke-linecap="round" filter="url(#soft)"/>
+    <path d="M128 18 V58 a8 8 0 0 0 16 0 V22 a5 5 0 0 0 -10 0 V54" fill="none" stroke="#6b7280" stroke-width="0.8" stroke-linecap="round"/>
+    <circle cx="26" cy="26" r="13" fill="#7c5a35"/><text class="num" x="26" y="31" text-anchor="middle">5</text>
+    <text class="label" x="24" y="164">Match to statements</text>
+    <text class="caption" x="24" y="186">Each receipt clipped to its card row,</text>
+    <text class="caption" x="24" y="203">or made into a new expense (cash).</text>
+  </g>
+
+  <!-- ============ 6. Approve and see ============ -->
+  <g transform="translate(692 350) rotate(1.1 145 105)" filter="url(#shadow)">
+    <rect width="290" height="210" rx="10" fill="url(#card)" stroke="#e7dcc6"/>
+  </g>
+  <g transform="translate(692 350)">
+    <!-- laptop -->
+    <g filter="url(#soft)">
+      <rect x="62" y="14" width="150" height="96" rx="8" fill="url(#bezel)"/>
+      <rect x="70" y="21" width="134" height="80" rx="3" fill="#ffffff"/>
+      <path d="M44 110 H230 L222 122 H52 Z" fill="url(#metal)" stroke="#9ca3af"/>
+      <rect x="120" y="110" width="34" height="4" rx="2" fill="#9ca3af"/>
+    </g>
+    <!-- dashboard -->
+    <g>
+      <rect x="78" y="56" width="12" height="36" rx="2" fill="#8b5cf6"/>
+      <rect x="94" y="44" width="12" height="48" rx="2" fill="#14b8a6"/>
+      <rect x="110" y="64" width="12" height="28" rx="2" fill="#f59e0b"/>
+      <rect x="126" y="38" width="12" height="54" rx="2" fill="#ec4899"/>
+      <circle cx="176" cy="64" r="20" fill="#e0e7ff"/>
+      <path d="M176 64 L176 44 A20 20 0 0 1 194.6 71.3 Z" fill="#8b5cf6"/>
+      <path d="M176 64 L194.6 71.3 A20 20 0 0 1 160 76 Z" fill="#14b8a6"/>
+      <circle cx="176" cy="64" r="9" fill="#ffffff"/>
+      <rect x="78" y="28" width="40" height="5" rx="2" fill="#cbd5e1"/>
+    </g>
+    <!-- coins -->
+    <g filter="url(#soft)">
+      <ellipse cx="236" cy="118" rx="20" ry="7" fill="#b7791f"/><rect x="216" y="104" width="40" height="14" fill="url(#gold)"/><ellipse cx="236" cy="104" rx="20" ry="7" fill="#fde68a" stroke="#d69e2e"/>
+      <ellipse cx="236" cy="96" rx="20" ry="7" fill="#b7791f"/><rect x="216" y="84" width="40" height="12" fill="url(#gold)"/><ellipse cx="236" cy="84" rx="20" ry="7" fill="#fde68a" stroke="#d69e2e"/>
+      <text x="236" y="88" text-anchor="middle" font-size="9" font-weight="800" fill="#92400e">$</text>
+    </g>
+    <circle cx="26" cy="26" r="13" fill="#7c5a35"/><text class="num" x="26" y="31" text-anchor="middle">6</text>
+    <rect x="232" y="146" width="40" height="18" rx="9" fill="url(#you)"/><text class="you" x="252" y="159" text-anchor="middle">YOU</text>
+    <text class="label" x="24" y="164">Approve and see</text>
+    <text class="caption" x="24" y="186">Approve in bulk, receipt beside each;</text>
+    <text class="caption" x="24" y="203">see trends and who owes whom.</text>
+  </g>
+</svg>
