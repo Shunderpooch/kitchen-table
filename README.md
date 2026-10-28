@@ -404,6 +404,37 @@ Windows asks once whether node may accept connections: allow **private**
 networks only. The app is plain HTTP with a password: fine at home, not for
 the internet.
 
+### Fetching card and bank transactions
+
+Transactions can be fetched automatically through
+[SimpleFIN Bridge](https://beta-bridge.simplefin.org/) (read-only, US and
+Canada, a small yearly fee): connect your banks there, create a setup token,
+and claim it once.
+
+```bash
+python -m backend.src.main fetch connect <setup token>   # stores the access URL in data/secrets/
+python -m backend.src.main fetch run                     # new transactions -> expenses awaiting approval
+python -m backend.src.main fetch accounts                # card names, last transaction, provider errors
+python -m backend.src.main fetch set-account <id> --card "Alex Amex" --spender Alex
+```
+
+- Each transaction is stored once by the provider's id, so overlapping
+  fetches and re-runs add nothing; two identical purchases on one day stay two.
+- Every provider response is kept unmodified in `data/fetch/simplefin/`.
+- A transaction already recorded from an uploaded statement is linked to that
+  row instead of becoming a second expense.
+- Card payments and bank deposits are recorded but are not expenses; a credit
+  on a card is a refund.
+- The Bridge's errors (an account that needs reconnecting, a lapsed
+  subscription) are shown per account; each account's last transaction date
+  shows when a connection has gone quiet.
+- `install_tasks.ps1` registers a daily fetch at a random minute; it does
+  nothing until `fetch connect` has been run.
+
+No aggregator covers every institution reliably, so statements remain the
+record of what was charged (see the statement archive and monthly
+reconciliation).
+
 ### Every receipt mapped to an expense
 
 ![How a receipt becomes an expense: linked to its statement row, staged until its statement arrives and then merged, or staged for you to approve](docs/images/receipt-lifecycle.svg)
