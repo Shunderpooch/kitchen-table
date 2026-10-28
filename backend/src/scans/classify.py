@@ -81,14 +81,23 @@ def detect_kind(text: str, page_count: int) -> tuple[str, list[str]]:
     return kind, [f"kind '{kind}' from text cues (receipt={receipt}, manual={manual}, instructions={instructions})"]
 
 
+# Documents come pre-approved only when the store is filed in one folder at
+# least this often (with no date tie): 90% of them then have the right date
+# and folder, against 85% at 0.6 (labelled census, dev split, Oct 2026).
+CONFIDENT_FOLDER_SHARE = 0.8
+
+
 def detect_category(layout: OneDriveLayout, merchant: Optional[str], text: str) -> tuple[str, bool, str]:
     """Return (category, confident, reason)."""
     if merchant:
         category, count, share = layout.category_for_merchant(merchant)
         if category and category in layout.receipt_categories:
-            confident = count >= 2 and share >= 0.6
+            # A store filed in several folders (a hardware store under plants
+            # and home improvement) is the owner's call each time: not confident.
+            confident = count >= 2 and share >= CONFIDENT_FOLDER_SHARE
+            note = "" if confident or count < 2 else "; this store is filed in several folders (check)"
             return category, confident, (
-                f"category '{category}' from history ({count} of {round(count / share)} '{merchant}' receipts)"
+                f"category '{category}' from history ({count} of {round(count / share)} '{merchant}' receipts){note}"
             )
     scores = {
         cat: _count(patterns, text)
@@ -182,6 +191,9 @@ def decide(
             decision.reasons.append(f"{car_reason} (filed under cars/; clear 'car' to undo)")
             decision.needs_review = True
         if not extracted.date or not extracted.merchant:
+            decision.needs_review = True
+        if extracted.date_rivals:
+            decision.reasons.append("another date on the receipt is just as likely (check the date)")
             decision.needs_review = True
         if not extracted.time:
             decision.reasons.append("time not found (filename will omit it)")

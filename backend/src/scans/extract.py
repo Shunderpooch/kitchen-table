@@ -61,6 +61,10 @@ class Extracted:
     merchant_source: Optional[str] = None
     total: Optional[str] = None
     reasons: list[str] = field(default_factory=list)
+    # How sure the date is: the winning candidate's score (3+ = explicit year,
+    # +2 on a "date"/time line) and how many other dates scored as high.
+    date_score: int = 0
+    date_rivals: int = 0
 
 
 def _build_date(parts: dict) -> Optional[date]:
@@ -267,6 +271,11 @@ def extract_fields(
         return result
 
     result.date, result.time = find_date_and_time(text, today=today)
+    if result.date:
+        candidates = list(_date_candidates(text, today or date.today()))
+        best = max(score for score, *_ in candidates)
+        result.date_score = best
+        result.date_rivals = len({value for score, _, value, _ in candidates if score == best} - {result.date})
     result.total = find_total(text)
 
     merchant = match_known_merchant(text, known_merchants)

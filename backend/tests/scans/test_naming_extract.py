@@ -142,3 +142,18 @@ def test_date_glued_to_the_time():
 
     day, at = find_date_and_time("SHAWS\nTOTAL 54.10\n9/28/2416:58\nThank you", today=date(2026, 10, 18))
     assert day == date(2024, 9, 28) and at == time(16, 58)
+
+
+def test_a_tied_date_or_a_store_filed_in_several_folders_needs_a_look(layout):
+    from backend.src.scans.classify import decide
+    from backend.src.scans.extract import extract_fields
+
+    known = layout.known_merchants()
+    tied = "TRADER JOE'S\nDate: 09/01/2026 10:15\nDate: 09/05/2026\nTOTAL 12.00\n"
+    extracted = extract_fields(tied, known, today=date(2026, 10, 18))
+    assert extracted.date_rivals == 1
+    assert decide(layout, extracted, tied, 1).needs_review
+    # CVS is filed under grocery once and health_care twice.
+    cvs = "CVS pharmacy\n09/02/2026 14:20\nSUBTOTAL 8.00\nTAX 0.49\nTOTAL 8.49\nVISA 8.49\nTHANK YOU\n"
+    decision = decide(layout, extract_fields(cvs, known, today=date(2026, 10, 18)), cvs, 1)
+    assert decision.needs_review and "several folders" in "; ".join(decision.reasons)
