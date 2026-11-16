@@ -255,6 +255,17 @@ export const receiptsRouter = createTRPCRouter({
       return { rows: rows.map((row) => ({ ...row, look: lookReasons(row) })), total: total?.n ?? 0 };
     }),
 
+  /** Cards already used on expenses, most used first, to pick from when staging. */
+  cards: publicProcedure.query(({ ctx }) =>
+    ctx.db
+      .all<{ card: string }>(sql`
+        SELECT card FROM expenses
+        WHERE card IS NOT NULL AND trim(card) <> ''
+        GROUP BY card
+        ORDER BY count(*) DESC`)
+      .map((row) => row.card),
+  ),
+
   updateStaged: publicProcedure
     .input(
       z.object({
