@@ -9,6 +9,8 @@ import type { ManifestRow } from "~/server/api/routers/scans";
 
 const input = "rounded border border-zinc-800 bg-zinc-900 px-2 py-1 text-xs text-zinc-100";
 const button = "rounded px-3 py-1.5 text-sm disabled:opacity-40";
+/** Folder choice that files a receipt under Documents/cars/<car>/ (not a receipts folder). */
+const CARS_FOLDER = "__cars__";
 
 export default function InboxPage() {
   const [tab, setTab] = useState<"scans" | "expenses">("scans");
@@ -479,6 +481,11 @@ function DocumentCard({
   const action = value("action");
   const kind = value("kind") || "receipt";
   const planned = doc.head.action;
+  // Receipts for a car file under cars/<car>/ instead of a receipts folder.
+  const car = value("car");
+  const [carsPicked, setCarsPicked] = useState(false);
+  const forCar = Boolean(car) || carsPicked;
+  const needsCar = (kind === "receipt" || kind === "unknown") && forCar && !car;
   const border =
     action === "skip" ? "border-zinc-800 opacity-50" : action === "file" ? "border-emerald-900/70" : "border-amber-700/70";
   return (
@@ -524,6 +531,8 @@ function DocumentCard({
                   <input
                     type="checkbox"
                     checked={action === "file"}
+                    disabled={needsCar && action !== "file"}
+                    title={needsCar ? "Pick the car first" : undefined}
                     onChange={(e) => setField("action", e.target.checked ? "file" : "review")}
                   />
                   approve
@@ -559,24 +568,44 @@ function DocumentCard({
                 className={`${input} w-40`}
               />
               {(kind === "receipt" || kind === "unknown") && (
-                <select value={value("category")} onChange={(e) => setField("category", e.target.value)} className={input}>
-                  <option value="">(folder)</option>
-                  {categories.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              )}
-              {kind === "car" && (
-                <select value={value("car")} onChange={(e) => setField("car", e.target.value)} className={input}>
-                  <option value="">(car)</option>
-                  {cars.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                <>
+                  <select
+                    value={forCar ? CARS_FOLDER : value("category")}
+                    onChange={(e) => {
+                      if (e.target.value === CARS_FOLDER) {
+                        setCarsPicked(true);
+                        if (!car && action === "file") setField("action", "review");
+                        return;
+                      }
+                      setCarsPicked(false);
+                      if (car) setField("car", "");
+                      setField("category", e.target.value);
+                    }}
+                    className={input}
+                  >
+                    <option value="">(folder)</option>
+                    {cars.length > 0 && <option value={CARS_FOLDER}>cars</option>}
+                    {categories.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                  {forCar && (
+                    <select
+                      value={car}
+                      onChange={(e) => setField("car", e.target.value)}
+                      className={`${input} ${car ? "" : "border-amber-600"}`}
+                    >
+                      <option value="">(which car?)</option>
+                      {cars.map((c) => (
+                        <option key={c} value={c}>
+                          {c.replaceAll("_", " ")}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </>
               )}
               <select value={value("person") || "self"} onChange={(e) => setField("person", e.target.value)} className={input}>
                 <option value="self">mine</option>
