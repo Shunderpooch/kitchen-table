@@ -197,6 +197,7 @@ function BatchReview({ id }: { id: string }) {
   const [edits, setEdits] = useState<Edits>({});
   const [focus, setFocus] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null); // document shown in the large pop-up
+  const [carsPicked, setCarsPicked] = useState<Set<string>>(new Set());
   const save = api.scans.updateManifest.useMutation();
   const file = api.scans.fileBatch.useMutation({
     onSuccess: async (result) => {
@@ -330,6 +331,15 @@ function BatchReview({ id }: { id: string }) {
       setField={(field, v) => setField(doc.head.item_id, field, v)}
       onCut={(itemIndex) => cutBefore(doc, itemIndex)}
       onOpen={() => openAt(index)}
+      carsPicked={carsPicked.has(doc.head.item_id)}
+      setCarsPicked={(picked) =>
+        setCarsPicked((prev) => {
+          const next = new Set(prev);
+          if (picked) next.add(doc.head.item_id);
+          else next.delete(doc.head.item_id);
+          return next;
+        })
+      }
       pagesByItem={pagesByItem}
       target={
         doc.items.some((item) => Object.keys(edits[item.item_id] ?? {}).some((f) => f !== "action"))
@@ -485,6 +495,8 @@ function DocumentCard({
   setField,
   onCut,
   onOpen,
+  carsPicked,
+  setCarsPicked,
   pagesByItem,
   target,
   info,
@@ -502,6 +514,9 @@ function DocumentCard({
   setField: (field: Field, v: string) => void;
   onCut: (itemIndex: number) => void;
   onOpen: () => void;
+  /** "cars" chosen as the folder before a car is picked (shared by the list and the pop-up). */
+  carsPicked: boolean;
+  setCarsPicked: (picked: boolean) => void;
   pagesByItem: Map<string, number[]>;
   target?: string;
   info?: { total?: string; reasons?: string; text_preview?: string };
@@ -518,7 +533,6 @@ function DocumentCard({
   const planned = doc.head.action;
   // Receipts for a car file under cars/<car>/ instead of a receipts folder.
   const car = value("car");
-  const [carsPicked, setCarsPicked] = useState(false);
   const forCar = Boolean(car) || carsPicked;
   const needsCar = (kind === "receipt" || kind === "unknown") && forCar && !car;
   const border =
