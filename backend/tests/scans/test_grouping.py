@@ -171,6 +171,21 @@ def test_joined_document_is_one_pdf_and_can_be_split(tmp_path, layout):
     assert len(PdfReader(result.filed[0].target).pages) == 2
 
 
+def test_pages_scanned_apart_join_into_one_pdf(tmp_path, layout):
+    """The review screen joins a document's pages wherever they were scanned."""
+    inbox = stack(tmp_path, [DUNKIN_MORNING, DEWALT_MANUAL, TRADER_JOES])
+    rows = plan_batch(inbox, layout, today=TODAY)
+    assert documents(rows) == [["0001"], ["0002"], ["0003"]]
+    for row in rows:
+        row["action"] = "file"
+    rows[0]["merge_into"] = "0003"  # the first page belongs after the last document's page
+    manifest = tmp_path / "work" / "manifest.csv"
+    write_manifest(rows, manifest)
+    filed = {p.item_id: p for p in apply_manifest(manifest, layout, dry_run=True).filed}
+    assert sorted(filed) == ["0002", "0003"]
+    assert [p.path.name for p in filed["0003"].pages] == ["FastFoto_0003.jpg", "FastFoto_0001.jpg"]
+
+
 def test_separator_sheets_split_a_scansmart_stack(tmp_path, layout):
     """One-page ScanSmart PDFs; fake OCR reads the colour patch on each page."""
     inbox = tmp_path / "inbox"

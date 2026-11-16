@@ -219,16 +219,31 @@ function BatchReview({ id }: { id: string }) {
     for (const page of batch.data?.pages ?? []) map.set(page.item_id, [...(map.get(page.item_id) ?? []), page.n]);
     return map;
   }, [batch.data]);
+  // A document is its first item plus every item whose merge_into points at it, wherever
+  // they were scanned; pages run in scan order, as filing joins them.
   const docs: Doc[] = [];
+  const byHead = new Map<string, Doc>();
   for (const row of rows) {
-    const current = docs[docs.length - 1];
-    if (value(row, "merge_into") && current) {
-      current.items.push(row);
-      current.pages.push(...(pagesByItem.get(row.item_id) ?? []));
+    if (value(row, "merge_into")) continue;
+    const doc = { head: row, items: [row], pages: [...(pagesByItem.get(row.item_id) ?? [])] };
+    docs.push(doc);
+    byHead.set(row.item_id, doc);
+  }
+  for (const row of rows) {
+    const target = value(row, "merge_into");
+    if (!target) continue;
+    const doc = byHead.get(target);
+    if (doc) {
+      doc.items.push(row);
+      doc.pages.push(...(pagesByItem.get(row.item_id) ?? []));
     } else {
-      docs.push({ head: row, items: [row], pages: [...(pagesByItem.get(row.item_id) ?? [])] });
+      // Points at a part, not a document: show it on its own rather than hide its pages.
+      const own = { head: row, items: [row], pages: [...(pagesByItem.get(row.item_id) ?? [])] };
+      docs.push(own);
+      byHead.set(row.item_id, own);
     }
   }
+  docs.sort((a, b) => a.head.item_id.localeCompare(b.head.item_id));
   const setField = (itemId: string, field: Field, v: string) =>
     setEdits((prev) => ({ ...prev, [itemId]: { ...prev[itemId], [field]: v } }));
   const setMany = (changes: [string, Field, string][]) =>
@@ -255,13 +270,13 @@ function BatchReview({ id }: { id: string }) {
   const ids = (items: ManifestRow[]) => items.map((item) => item.item_id);
 
   // Cut or join between two scanned items. Every part points at its document's first item.
-  const joinWithPrevious = (docIndex: number) => {
-    const previous = docs[docIndex - 1];
-    const doc = docs[docIndex];
-    if (!previous || !doc) return;
-    setMany(doc.items.map((item) => [item.item_id, "merge_into", previous.head.item_id]));
-    describe.mutate({ id, groups: [[...ids(previous.items), ...ids(doc.items)]] });
+  const joinInto = (doc: Doc | undefined, target: Doc | undefined) => {
+    if (!doc || !target || doc === target) return;
+    setMany(doc.items.map((item) => [item.item_id, "merge_into", target.head.item_id]));
+    const parts = [...ids(target.items.slice(1)), ...ids(doc.items)].sort();
+    describe.mutate({ id, groups: [[target.head.item_id, ...parts]] });
   };
+  const joinWithPrevious = (docIndex: number) => joinInto(docs[docIndex], docs[docIndex - 1]);
   const cutBefore = (doc: Doc, itemIndex: number) => {
     const newHead = doc.items[itemIndex];
     if (!newHead) return;
@@ -331,6 +346,14 @@ function BatchReview({ id }: { id: string }) {
       setField={(field, v) => setField(doc.head.item_id, field, v)}
       onCut={(itemIndex) => cutBefore(doc, itemIndex)}
       onOpen={() => openAt(index)}
+      number={index + 1}
+      joinTargets={docs
+        .filter((other) => other !== doc)
+        .map((other) => ({
+          id: other.head.item_id,
+          label: `#${docs.indexOf(other) + 1} ${value(other.head, "date")} ${value(other.head, "merchant") || "(no merchant)"}`,
+        }))}
+      onJoin={(targetId) => joinInto(doc, byHead.get(targetId))}
       carsPicked={carsPicked.has(doc.head.item_id)}
       setCarsPicked={(picked) =>
         setCarsPicked((prev) => {
@@ -495,6 +518,9 @@ function DocumentCard({
   setField,
   onCut,
   onOpen,
+  number,
+  joinTargets,
+  onJoin,
   carsPicked,
   setCarsPicked,
   pagesByItem,
@@ -514,6 +540,10 @@ function DocumentCard({
   setField: (field: Field, v: string) => void;
   onCut: (itemIndex: number) => void;
   onOpen: () => void;
+  number: number;
+  /** Other documents this one's pages can be added to, wherever they are in the list. */
+  joinTargets: { id: string; label: string }[];
+  onJoin: (targetId: string) => void;
   /** "cars" chosen as the folder before a car is picked (shared by the list and the pop-up). */
   carsPicked: boolean;
   setCarsPicked: (picked: boolean) => void;
@@ -577,6 +607,7 @@ function DocumentCard({
         </div>
         <div className="min-w-0 flex-1 space-y-1.5" onClick={(e) => e.stopPropagation()}>
           <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-zinc-500">#{number}</span>
             {readOnly ? (
               <span className="text-xs text-zinc-400">{action === "skip" ? "skipped" : "filed"}</span>
             ) : (
@@ -598,6 +629,21 @@ function DocumentCard({
                 >
                   {action === "skip" ? "unskip" : "skip"}
                 </button>
+                {joinTargets.length > 0 && (
+                  <select
+                    value=""
+                    onChange={(e) => e.target.value && onJoin(e.target.value)}
+                    className={`${input} max-w-[13rem] text-zinc-400`}
+                    title="These pages belong to another document: add them after its pages"
+                  >
+                    <option value="">join with…</option>
+                    {joinTargets.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </>
             )}
             <fieldset disabled={readOnly} className="flex flex-wrap items-center gap-2">
