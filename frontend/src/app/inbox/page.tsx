@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Navigation } from "~/app/_components/navigation";
 import { DocumentViewer } from "~/app/_components/document-viewer";
 import { api, type RouterOutputs } from "~/trpc/react";
@@ -174,6 +174,13 @@ function batchLabel(id: string) {
   return m ? `${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}` : id;
 }
 
+/** Whether a field's value can be saved yet (the manifest takes a whole date and time only). */
+function savable(field: string, v: string) {
+  if (field === "date") return /^(\d{4}-\d{2}-\d{2})?$/.test(v);
+  if (field === "time") return /^(\d{2}[-:]\d{2})?$/.test(v);
+  return true;
+}
+
 const FIELDS = ["action", "kind", "person", "category", "car", "date", "time", "merchant", "merge_into"] as const;
 type Field = (typeof FIELDS)[number];
 type Edits = Record<string, Partial<Record<Field, string>>>;
@@ -252,6 +259,52 @@ function BatchReview({ id }: { id: string }) {
       for (const [itemId, field, v] of changes) next[itemId] = { ...next[itemId], [field]: v };
       return next;
     });
+
+  // Autosave: edits go into the batch's manifest shortly after they are made, so approvals
+  // and fixes survive a refresh and show on other devices. A half-typed date or time waits.
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const saving = useRef(false);
+  useEffect(() => {
+    if (saving.current || file.isPending) return;
+    const ready = Object.entries(edits).flatMap(([item_id, changes]) => {
+      const fields = Object.fromEntries(Object.entries(changes).filter(([field, v]) => savable(field, v ?? "")));
+      return Object.keys(fields).length ? [{ item_id, fields }] : [];
+    });
+    if (!ready.length) return;
+    const timer = setTimeout(() => {
+      saving.current = true;
+      save
+        .mutateAsync({
+          id,
+          edits: ready.map(({ item_id, fields }) => ({
+            item_id,
+            ...fields,
+            action: fields.action as "file" | "review" | "skip" | undefined,
+          })),
+        })
+        .then(async () => {
+          await utils.scans.batch.invalidate({ id });
+          // Keep anything changed again while saving; drop what is now in the manifest.
+          setEdits((prev) => {
+            const next: Edits = {};
+            for (const [itemId, changes] of Object.entries(prev)) {
+              const saved = ready.find((r) => r.item_id === itemId)?.fields ?? {};
+              const left = Object.fromEntries(
+                Object.entries(changes).filter(([field, v]) => (saved as Record<string, string>)[field] !== v),
+              );
+              if (Object.keys(left).length) next[itemId] = left;
+            }
+            return next;
+          });
+          setSaveError(null);
+        })
+        .catch((error: Error) => setSaveError(error.message))
+        .finally(() => {
+          saving.current = false;
+        });
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [edits, id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Re-cut documents are named again from their own pages.
   const [described, setDescribed] = useState<Record<string, { total?: string; reasons?: string; text_preview?: string }>>({});
@@ -403,6 +456,9 @@ function BatchReview({ id }: { id: string }) {
               {docs.length} documents · <span className="text-emerald-400">{counts.approved} approved</span> ·{" "}
               <span className="text-amber-300">{counts.look} to look at</span> · {counts.skipped} skipped
             </span>
+            <span className="text-xs text-zinc-500">
+              {save.isPending || Object.keys(edits).length ? "saving…" : "changes saved"}
+            </span>
             <button
               onClick={() => setMany(docs.filter((d) => value(d.head, "action") === "review").map((d) => [d.head.item_id, "action", "file"]))}
               disabled={counts.look === 0}
@@ -420,7 +476,8 @@ function BatchReview({ id }: { id: string }) {
             </button>
           </div>
         )}
-        {(save.error ?? file.error) && <p className="mb-2 text-sm text-red-400">{(save.error ?? file.error)?.message}</p>}
+        {saveError && <p className="mb-2 text-sm text-red-400">Not saved yet: {saveError}</p>}
+        {file.error && <p className="mb-2 text-sm text-red-400">{file.error.message}</p>}
         {batch.data.problems && <p className="mb-2 text-sm text-amber-400">{batch.data.problems}</p>}
         {file.data && !filed && (
           <div className="mb-3 rounded-lg border border-sky-700/50 bg-sky-950/30 p-3 text-sm">
