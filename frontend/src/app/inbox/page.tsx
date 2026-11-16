@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Navigation } from "~/app/_components/navigation";
 import { DocumentViewer } from "~/app/_components/document-viewer";
 import { api, type RouterOutputs } from "~/trpc/react";
@@ -196,6 +196,8 @@ function BatchReview({ id }: { id: string }) {
   const conventions = api.scans.conventions.useQuery();
   const [edits, setEdits] = useState<Edits>({});
   const [focus, setFocus] = useState<string | null>(null);
+  const [open, setOpen] = useState<string | null>(null); // document shown in the large pop-up
+  const [carsPicked, setCarsPicked] = useState<Set<string>>(new Set());
   const save = api.scans.updateManifest.useMutation();
   const file = api.scans.fileBatch.useMutation({
     onSuccess: async (result) => {
@@ -313,6 +315,47 @@ function BatchReview({ id }: { id: string }) {
     skipped: docs.filter((d) => value(d.head, "action") === "skip").length,
   };
   const focused = docs.find((d) => d.head.item_id === focus) ?? docs[0];
+  const openIndex = docs.findIndex((d) => d.head.item_id === open);
+  const opened = docs[openIndex];
+  const openAt = (index: number) => {
+    const doc = docs[index];
+    if (!doc) return;
+    setOpen(doc.head.item_id);
+    setFocus(doc.head.item_id);
+  };
+  const card = (doc: Doc, index: number) => (
+    <DocumentCard
+      batchId={id}
+      doc={doc}
+      value={(field) => value(doc.head, field)}
+      setField={(field, v) => setField(doc.head.item_id, field, v)}
+      onCut={(itemIndex) => cutBefore(doc, itemIndex)}
+      onOpen={() => openAt(index)}
+      carsPicked={carsPicked.has(doc.head.item_id)}
+      setCarsPicked={(picked) =>
+        setCarsPicked((prev) => {
+          const next = new Set(prev);
+          if (picked) next.add(doc.head.item_id);
+          else next.delete(doc.head.item_id);
+          return next;
+        })
+      }
+      pagesByItem={pagesByItem}
+      target={
+        doc.items.some((item) => Object.keys(edits[item.item_id] ?? {}).some((f) => f !== "action"))
+          ? undefined // changed since the last save: shown again after "Check placement"
+          : (batch.data.targets[doc.head.item_id] ?? `${doc.head.destination}/${doc.head.filename}`)
+      }
+      info={described[doc.head.item_id]}
+      focused={focused?.head.item_id === doc.head.item_id}
+      onFocus={() => setFocus(doc.head.item_id)}
+      readOnly={filed}
+      categories={conventions.data?.categories ?? []}
+      people={conventions.data?.people ?? []}
+      kinds={conventions.data?.kinds ?? []}
+      cars={conventions.data?.cars ?? []}
+    />
+  );
   const editList = () =>
     Object.entries(edits).map(([item_id, changes]) => ({
       item_id,
@@ -398,31 +441,24 @@ function BatchReview({ id }: { id: string }) {
                   ↑ join with the document above
                 </button>
               )}
-              <DocumentCard
-                batchId={id}
-                doc={doc}
-                value={(field) => value(doc.head, field)}
-                setField={(field, v) => setField(doc.head.item_id, field, v)}
-                onCut={(itemIndex) => cutBefore(doc, itemIndex)}
-                pagesByItem={pagesByItem}
-                target={
-                  doc.items.some((item) => Object.keys(edits[item.item_id] ?? {}).some((f) => f !== "action"))
-                    ? undefined // changed since the last save: shown again after "Check placement"
-                    : (batch.data.targets[doc.head.item_id] ?? `${doc.head.destination}/${doc.head.filename}`)
-                }
-                info={described[doc.head.item_id]}
-                focused={focused?.head.item_id === doc.head.item_id}
-                onFocus={() => setFocus(doc.head.item_id)}
-                readOnly={filed}
-                categories={conventions.data?.categories ?? []}
-                people={conventions.data?.people ?? []}
-                kinds={conventions.data?.kinds ?? []}
-                cars={conventions.data?.cars ?? []}
-              />
+              {card(doc, index)}
             </li>
           ))}
         </ol>
       </div>
+      {opened && (
+        <PagePopup
+          batchId={id}
+          pages={opened.pages}
+          title={`${value(opened.head, "date")} ${value(opened.head, "merchant")}`}
+          position={`${openIndex + 1} of ${docs.length}`}
+          onClose={() => setOpen(null)}
+          onPrevious={openIndex > 0 ? () => openAt(openIndex - 1) : undefined}
+          onNext={openIndex < docs.length - 1 ? () => openAt(openIndex + 1) : undefined}
+        >
+          {card(opened, openIndex)}
+        </PagePopup>
+      )}
       <aside className="hidden xl:block">
         <div className="sticky top-2 max-h-[calc(100vh-1rem)] space-y-2 overflow-auto rounded-lg border border-zinc-800 bg-zinc-900/40 p-2">
           {focused ? (
@@ -433,7 +469,14 @@ function BatchReview({ id }: { id: string }) {
               </div>
               {focused.pages.map((n) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={n} src={`/api/scans/${id}/page/${n}`} alt={`page ${n}`} className="w-full rounded bg-white" />
+                <img
+                  key={n}
+                  src={`/api/scans/${id}/page/${n}`}
+                  alt={`page ${n}`}
+                  title="Open larger"
+                  onClick={() => openAt(docs.indexOf(focused))}
+                  className="w-full cursor-zoom-in rounded bg-white"
+                />
               ))}
             </>
           ) : (
@@ -451,6 +494,9 @@ function DocumentCard({
   value,
   setField,
   onCut,
+  onOpen,
+  carsPicked,
+  setCarsPicked,
   pagesByItem,
   target,
   info,
@@ -467,6 +513,10 @@ function DocumentCard({
   value: (field: Field) => string;
   setField: (field: Field, v: string) => void;
   onCut: (itemIndex: number) => void;
+  onOpen: () => void;
+  /** "cars" chosen as the folder before a car is picked (shared by the list and the pop-up). */
+  carsPicked: boolean;
+  setCarsPicked: (picked: boolean) => void;
   pagesByItem: Map<string, number[]>;
   target?: string;
   info?: { total?: string; reasons?: string; text_preview?: string };
@@ -483,7 +533,6 @@ function DocumentCard({
   const planned = doc.head.action;
   // Receipts for a car file under cars/<car>/ instead of a receipts folder.
   const car = value("car");
-  const [carsPicked, setCarsPicked] = useState(false);
   const forCar = Boolean(car) || carsPicked;
   const needsCar = (kind === "receipt" || kind === "unknown") && forCar && !car;
   const border =
@@ -515,7 +564,12 @@ function DocumentCard({
                   key={n}
                   src={`/api/scans/${batchId}/page/${n}?thumb=1`}
                   alt={`page ${n}`}
-                  className="h-28 w-auto rounded border border-zinc-800 bg-white"
+                  title="Open larger"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpen();
+                  }}
+                  className="h-28 w-auto cursor-zoom-in rounded border border-zinc-800 bg-white hover:border-sky-600"
                 />
               ))}
             </div>
@@ -630,6 +684,93 @@ function DocumentCard({
               {info?.reasons ?? doc.head.reasons}
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** A document's pages large, over the review list, with its fields beside them to edit. */
+function PagePopup({
+  batchId,
+  pages,
+  title,
+  position,
+  onClose,
+  onPrevious,
+  onNext,
+  children,
+}: {
+  batchId: string;
+  pages: number[];
+  title: string;
+  position: string;
+  onClose: () => void;
+  onPrevious?: () => void;
+  onNext?: () => void;
+  children: ReactNode;
+}) {
+  const [zoomed, setZoomed] = useState(false);
+  const pageKey = pages.join(",");
+  useEffect(() => setZoomed(false), [pageKey]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      const typing = e.target instanceof HTMLElement && e.target.closest("input, select, textarea");
+      if (typing) return;
+      if (e.key === "ArrowLeft") onPrevious?.();
+      if (e.key === "ArrowRight") onNext?.();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose, onPrevious, onNext]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex bg-black/80 p-2 sm:p-4" onClick={onClose}>
+      <div
+        className="mx-auto flex w-full max-w-7xl flex-col overflow-hidden rounded-lg border border-zinc-700 bg-zinc-950 lg:flex-row"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="order-2 min-h-0 flex-1 overflow-auto bg-zinc-900 p-2 lg:order-1">
+          {pages.map((n) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={n}
+              src={`/api/scans/${batchId}/page/${n}`}
+              alt={`page ${n}`}
+              onClick={() => setZoomed((z) => !z)}
+              title={zoomed ? "Fit to the window" : "Zoom in"}
+              className={`mx-auto mb-2 rounded bg-white ${zoomed ? "max-w-none w-[200%] cursor-zoom-out" : "w-full max-w-3xl cursor-zoom-in"}`}
+            />
+          ))}
+        </div>
+        <div className="order-1 max-h-[45vh] shrink-0 space-y-2 overflow-auto border-b border-zinc-800 p-3 lg:order-2 lg:max-h-none lg:w-[30rem] lg:border-b-0 lg:border-l">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm text-zinc-200">{title}</span>
+            <span className="text-xs text-zinc-500">{position}</span>
+            <div className="ml-auto flex gap-1">
+              <button
+                onClick={onPrevious}
+                disabled={!onPrevious}
+                className={`${button} bg-zinc-800 text-zinc-200 hover:bg-zinc-700`}
+                title="Previous document (←)"
+              >
+                ←
+              </button>
+              <button
+                onClick={onNext}
+                disabled={!onNext}
+                className={`${button} bg-zinc-800 text-zinc-200 hover:bg-zinc-700`}
+                title="Next document (→)"
+              >
+                →
+              </button>
+              <button onClick={onClose} className={`${button} bg-zinc-800 text-zinc-200 hover:bg-zinc-700`} title="Close (Esc)">
+                ✕
+              </button>
+            </div>
+          </div>
+          {children}
         </div>
       </div>
     </div>
