@@ -615,6 +615,7 @@ function ExpensesTab() {
   const utils = api.useUtils();
   const staged = api.receipts.staged.useQuery({ limit: 200 });
   const categories = api.categories.getAll.useQuery();
+  const cards = api.receipts.cards.useQuery();
   const [filter, setFilter] = useState<"all" | "look" | "ready">("all");
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [focus, setFocus] = useState<number | null>(null);
@@ -720,6 +721,7 @@ function ExpensesTab() {
                 onToggle={() => toggle(row.id)}
                 onFocus={() => setFocus(row.id)}
                 categories={categories.data ?? []}
+                cards={cards.data ?? []}
                 onUpdate={(changes) => update.mutate({ id: row.id, ...changes })}
               />
             ))}
@@ -747,6 +749,7 @@ function StagedExpenseRow({
   onToggle,
   onFocus,
   categories,
+  cards,
   onUpdate,
 }: {
   row: StagedRow;
@@ -755,7 +758,14 @@ function StagedExpenseRow({
   onToggle: () => void;
   onFocus: () => void;
   categories: Category[];
-  onUpdate: (changes: { amount?: number; date?: string; categoryId?: number; subtypeId?: number | null }) => void;
+  cards: string[];
+  onUpdate: (changes: {
+    amount?: number;
+    date?: string;
+    categoryId?: number;
+    subtypeId?: number | null;
+    card?: string | null;
+  }) => void;
 }) {
   const [amount, setAmount] = useState(row.amount.toFixed(2));
   useEffect(() => setAmount(row.amount.toFixed(2)), [row.amount]);
@@ -812,7 +822,20 @@ function StagedExpenseRow({
           )}
         </div>
       </td>
-      <td className="whitespace-nowrap text-xs text-zinc-400">{row.card ?? "—"}</td>
+      <td onClick={(e) => e.stopPropagation()}>
+        <select
+          value={row.card ?? ""}
+          onChange={(e) => onUpdate({ card: e.target.value || null })}
+          className={`${input} max-w-[10rem]`}
+        >
+          <option value="">(card)</option>
+          {(row.card && !cards.includes(row.card) ? [row.card, ...cards] : cards).map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </td>
       <td className="whitespace-nowrap text-xs text-zinc-400">{row.spender ?? row.tag ?? "—"}</td>
       <td className="text-[11px] text-amber-400/90">{row.look.join(" · ")}</td>
     </tr>
