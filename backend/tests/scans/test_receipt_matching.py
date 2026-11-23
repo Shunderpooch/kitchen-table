@@ -178,6 +178,30 @@ def test_receipt_expenses_and_their_replacement_by_a_statement_row(tmp_path):
         assert c.execute(text("SELECT expense_id FROM expense_documents WHERE document_id = 5")).scalar() == 50
 
 
+def test_a_receipt_expense_shared_by_two_documents_is_merged_once(tmp_path):
+    """A receipt filed twice: both copies point at one receipt expense, merged only once."""
+    from backend.src.scans.receipt_expenses import create_receipt_expenses
+
+    engine = make_db(tmp_path)
+    add_doc(engine, 5, "Documents/receipts/grocery/2021-03-02_18-10_market_basket.pdf",
+            "Market Basket\nTOTAL 42.10\nVISA 42.10", "market_basket", "2021-03-02")
+    create_receipt_expenses(engine, dry_run=False)
+    add_doc(engine, 7, "Documents/receipts/grocery/2021-03-02_18-10_market_basket_2.pdf",
+            "Market Basket\nTOTAL 42.10\nVISA 42.10", "market_basket", "2021-03-02")
+    with engine.begin() as c:
+        receipt_expense = c.execute(text("SELECT id FROM expenses WHERE content_hash = 'receipt:5'")).scalar()
+        c.exec_driver_sql("INSERT INTO expense_documents (expense_id, document_id, score, reasons, method, status) "
+                          "SELECT expense_id, 7, score, reasons, method, status FROM expense_documents "
+                          "WHERE expense_id = ? AND document_id = 5", (receipt_expense,))
+        c.exec_driver_sql("INSERT INTO expenses (id, date, type, amount, merchant, original_input_name, card) "
+                          "VALUES (50, '2021-03-03', 'Food', 42.10, 'market_basket', 'MARKET BASKET', 'Alex Amex')")
+    report = match_receipts(engine, confirm_above=6)
+    assert report.replaced_receipt_expenses == 1
+    with engine.begin() as c:
+        assert c.execute(text("SELECT count(*) FROM expenses WHERE id = :e"), {"e": receipt_expense}).scalar() == 0
+        assert c.execute(text("SELECT count(*) FROM expenses WHERE id = 50")).scalar() == 1
+
+
 def test_an_approved_receipt_expense_keeps_its_category_when_the_statement_arrives(tmp_path):
     from backend.src.scans.receipt_expenses import create_receipt_expenses
 

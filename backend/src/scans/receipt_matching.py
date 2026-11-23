@@ -455,11 +455,16 @@ def match_receipts(engine: Engine, confirm_above: Optional[float] = None) -> Mat
         decided = {(r[0], r[1]) for r in rows if r[0] not in receipt_expenses}
         confirmed = {r[1]: r[0] for r in rows if r[2] == "confirmed" and r[0] not in receipt_expenses}
         from_receipt = {r[1]: r[0] for r in rows if r[0] in receipt_expenses}
+        # One receipt expense can stand for several documents (a receipt filed twice, a
+        # duplicate scan); once merged into a statement row it is gone for the others.
+        merged: set[int] = set()
         # A suggestion confirmed by hand since the last run: merge now.
         for doc_id, receipt_expense in list(from_receipt.items()):
             if doc_id in confirmed:
-                _merge_receipt_expense(connection, receipt_expense, confirmed[doc_id])
-                report.replaced_receipt_expenses += 1
+                if receipt_expense not in merged:
+                    _merge_receipt_expense(connection, receipt_expense, confirmed[doc_id])
+                    merged.add(receipt_expense)
+                    report.replaced_receipt_expenses += 1
                 del from_receipt[doc_id]
         report.kept_decisions = len(decided)
         connection.exec_driver_sql("DELETE FROM expense_documents WHERE status = 'suggested'")
@@ -483,8 +488,11 @@ def match_receipts(engine: Engine, confirm_above: Optional[float] = None) -> Mat
                       and c.sure)
             reasons = "; ".join(c.reasons)
             receipt_expense = from_receipt.get(c.document_id)
-            if receipt_expense is not None:
+            if receipt_expense in merged:
+                reasons += "; the expense made from this receipt was already merged into a statement row"
+            elif receipt_expense is not None:
                 if strong:
+                    merged.add(receipt_expense)
                     reasons += "; " + _merge_receipt_expense(connection, receipt_expense, c.expense_id)
                     report.replaced_receipt_expenses += 1
                 else:
