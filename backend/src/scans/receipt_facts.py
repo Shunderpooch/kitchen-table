@@ -55,6 +55,8 @@ GENERIC_TOKENS = {
     "company", "the", "and", "www", "com", "http", "https", "paypal", "amzn", "mktp", "recurring", "pending",
     "with", "from", "restaurant", "market", "shop", "cafe", "coffee", "food", "grill", "pizza", "bar", "kitchen",
     "service", "services", "center", "north", "south", "east", "west", "street", "main", "usa", "mass", "boston",
+    # Kinds of place and paperwork: in filenames too ("parking_receipt", "bank_statement").
+    "parking", "prkg", "garage", "bank", "savings", "receipt", "statement", "bill", "agreement", "tolls",
 }
 
 
@@ -107,11 +109,16 @@ def platform_of(name: Optional[str]) -> Optional[str]:
     return next((key for key, pattern in _PLATFORMS.items() if name and pattern.search(name.replace("_", " "))), None)
 
 
+def _generic(token: str) -> bool:
+    """Generic words, also cut short as statements print them ("SEASIDE PIER COMPA")."""
+    return token in GENERIC_TOKENS or any(len(g) > len(token) and g.startswith(token) for g in GENERIC_TOKENS)
+
+
 def name_tokens(*names: Optional[str]) -> list[str]:
     """Distinctive words of a statement merchant name, for finding it on a receipt."""
     tokens = []
     for name in names:
         for token in slugify(name or "").split("_"):
-            if len(token) >= 4 and not token.isdigit() and token not in GENERIC_TOKENS and token not in tokens:
+            if len(token) >= 4 and not token.isdigit() and not _generic(token) and token not in tokens:
                 tokens.append(token)
     return tokens

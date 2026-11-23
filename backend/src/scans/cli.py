@@ -449,7 +449,7 @@ def match_receipts_cmd(check_only, confirm_above, as_json) -> None:
     import json
 
     from ..db.session import get_engine
-    from .receipt_matching import evaluate_against_links, match_receipts
+    from .receipt_matching import evaluate_against_decisions, evaluate_against_links, match_receipts
 
     engine = get_engine()
     check = evaluate_against_links(engine)
@@ -457,6 +457,12 @@ def match_receipts_cmd(check_only, confirm_above, as_json) -> None:
         console.print(f"On {check['linked']} expenses you linked by filename: {check['correct']} right, "
                       f"{check['wrong']} different, {check['no_match']} not found")
         for miss in check["misses"]:
+            console.print(f"  {miss}", markup=False)
+        decisions = evaluate_against_decisions(engine)
+        console.print(f"On your decisions: {decisions['confirmed_found']} of {decisions['confirmed']} confirmed "
+                      f"links still found; {decisions['rejected_suggested']} of {decisions['rejected']} rejected "
+                      f"links would be suggested again")
+        for miss in decisions["misses"]:
             console.print(f"  {miss}", markup=False)
     if check_only:
         return
