@@ -11,6 +11,7 @@ from rich.table import Table
 
 from .household import household_sheet, statement_sources
 from .db import (
+    get_engine,
     init_db,
     session_scope,
     Expense,
@@ -28,12 +29,15 @@ from .categorize import (
 )
 from .validate import find_all_duplicates_in_batch
 from .scans.cli import scans as scans_cli
+from .statements.cli import statements as statements_cli
 
 # Force UTF-8 output on Windows
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
 
 console = Console(force_terminal=True, legacy_windows=False)
+# Every imported statement file is kept here once (see statements/archive.py).
+STATEMENT_ARCHIVE = Path(__file__).resolve().parents[2] / "data" / "statements"
 
 
 @click.group()
@@ -108,6 +112,33 @@ def process(
 
         print(f"Read {len(expenses)} expenses")
 
+        # Keep the statement and match its rows to expenses already recorded
+        # (fetched, or from an earlier import); only the rest become new.
+        statement = None
+        if file_path.name != household_sheet() and expenses:
+            from .ingest.csv_reader import infer_statement_closing_date
+            from .statements.archive import Row, archive_statement
+
+            session.commit()  # the archive writes through its own connection
+            rows = {id(e): Row(e.date, e.original_input_name or e.merchant or "", e.amount) for e in expenses}
+            card_name = next((e.card for e in expenses if e.card), card)
+            statement = archive_statement(get_engine(db_path), file_path, card_name, list(rows.values()),
+                                          STATEMENT_ARCHIVE)
+            if statement.already_archived:
+                print(f"Statement already imported (archived as {statement.archived_path.name}); nothing to do")
+                source_file.status = 'completed'
+                source_file.row_count = 0
+                source_file.processed_at = datetime.now()
+                print("Processed 0 expenses")
+                return
+            by_row = {id(r): e for e, r in ((e, rows[id(e)]) for e in expenses)}
+            matched = [m for m in statement.matches if m.expense_id is not None]
+            expenses = [by_row[id(m.row)] for m in statement.matches if m.expense_id is None and m.spending]
+            for m in statement.matches:
+                if m.expense_id is not None or not m.spending:
+                    by_row[id(m.row)].source_file = None  # recorded already: not a new row of this import
+            print(f"Statement archived: {len(matched)} rows already recorded, {len(expenses)} new")
+
         # Check for duplicates
         if not skip_duplicates:
             print("Checking for duplicates...")
@@ -123,6 +154,14 @@ def process(
         for expense in expenses:
             session.add(expense)
         session.flush()
+        if statement is not None:
+            from .statements.archive import record_created
+
+            session.commit()  # the statement rows are linked through a separate connection
+            created = {id(e): e.id for e in expenses}
+            record_created(get_engine(db_path), statement.statement_id,
+                           [created.get(id(by_row[id(m.row)])) for m in statement.matches
+                            if m.expense_id is None and m.spending])
 
         # Categorize expenses
         categorized_count = 0
@@ -458,6 +497,7 @@ def _seed_statement_sources(session) -> None:
 
 
 cli.add_command(scans_cli)
+cli.add_command(statements_cli)
 
 
 if __name__ == '__main__':
