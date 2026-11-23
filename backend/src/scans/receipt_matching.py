@@ -83,8 +83,10 @@ def amounts_in(text_: str) -> set[str]:
 # ------------------------------------------------------------------ scoring
 
 
-def merchant_score(expense: dict, doc: dict) -> tuple[float, str]:
-    """2 = names agree, 1 = partly, 0 = no evidence; with the reason."""
+def merchant_score(expense: dict, doc: dict) -> tuple[float, str, bool]:
+    """2 = names agree, 1 = partly, 0 = no evidence; with the reason, and whether the
+    store's name itself agreed (not just a statement word found in the receipt text,
+    which is often the town: "RIVERTON PRKG ELM RIVERTON")."""
     from rapidfuzz import fuzz
 
     names = [expense.get("merchant"), expense.get("original_input_name")]
@@ -95,17 +97,23 @@ def merchant_score(expense: dict, doc: dict) -> tuple[float, str]:
             if name:
                 best = max(best, fuzz.token_set_ratio(receipt_name, slugify(name).replace("_", " ")))
     if best >= 80:
-        return 2.0, "merchant names agree"
+        return 2.0, "merchant names agree", True
     facts: ReceiptFacts = doc["facts"]
-    found = [t for t in name_tokens(*names) if t in facts.squashed]
-    if any(len(t) >= 5 for t in found):
-        return 2.0, f"statement name '{found[0]}' is on the receipt"
     platform = platform_of(" ".join(n for n in names if n))
     if platform and platform == facts.platform:
-        return 2.0, f"ordered through {platform.replace('_', ' ')}"
+        return 2.0, f"ordered through {platform.replace('_', ' ')}", True
+    tokens = name_tokens(*names)
+    # Filenames name the store, and car paperwork the job too ("maple_auto_alternator").
+    filename = set(slugify(doc.get("path", "").rsplit("/", 1)[-1].rsplit(".", 1)[0]).split("_"))
+    in_name = [t for t in tokens if t in filename]
+    if in_name:
+        return 2.0, f"statement name '{in_name[0]}' is in the filename", True
+    found = [t for t in tokens if t in facts.squashed]
+    if any(len(t) >= 5 for t in found):
+        return 2.0, f"statement name '{found[0]}' is on the receipt", False
     if best >= 65 or found:
-        return 1.0, "merchant names partly agree"
-    return 0.0, ""
+        return 1.0, "merchant names partly agree", False
+    return 0.0, "", False
 
 
 @dataclass
@@ -138,9 +146,14 @@ def score_pair(expense: dict, doc: dict, card_map: Optional[dict[str, str]] = No
             reasons.append("it is the amount paid")
     elif not (printed_total and 0 <= days <= 3 and printed_total < value <= printed_total * (1 + _MAX_TIP)):
         return None  # an amount match is required
-    merchant, merchant_reason = merchant_score(expense, doc)
+    merchant, merchant_reason, named = merchant_score(expense, doc)
     if len(facts.amounts) > CROWDED_AMOUNTS and merchant < 2:
         return None  # a statement or long invoice: any amount appears somewhere on it
+    paperwork = doc.get("kind") == "car"
+    if paperwork and not exact and not named:
+        return None  # a "tip" on loan papers is a coincidence; garages and dealers are named
+    if paperwork and not merchant and days != 0:
+        return None  # loan papers, schedules, excise bills print many amounts
 
     card_points = 0.0
     if card_map:
@@ -161,8 +174,9 @@ def score_pair(expense: dict, doc: dict, card_map: Optional[dict[str, str]] = No
         score += 2 if days == 0 else 1 if days <= 3 else 0.5
         reasons.append("same day" if days == 0 else f"posted {days} day(s) after" if days > 0 else "posted a day before")
     else:
-        # Long gaps need the exact amount and either the store or the card to agree.
-        if not exact or not (merchant == 2 or card_points):
+        # Long gaps need the exact amount and either the store's name or the card to agree
+        # (a statement word in the receipt text is too weak: it is often the town).
+        if not exact or not (named or card_points):
             return None
         reasons.append(f"posted {days} days after" if days > 0 else f"charged {-days} days before (booked ahead)")
 
@@ -170,6 +184,8 @@ def score_pair(expense: dict, doc: dict, card_map: Optional[dict[str, str]] = No
     if merchant_reason:
         reasons.append(merchant_reason)
     paid_line = printed_total is not None and f"{printed_total:.2f}" == amount
+    if not merchant and not paid_line and days != 0:
+        return None  # an amount somewhere on the receipt, another day, another store: chance
     sure = bool(merchant) or paid_line or not amount.endswith(".00")
     if not sure:
         reasons.append("only a round amount ties them (check)")
@@ -555,3 +571,31 @@ def evaluate_against_links(engine: Engine) -> dict:
             misses.append(f"wrong match: {e['date']} {e['merchant']} ${e['amount']}")
     return {"linked": len(truth), "correct": correct, "wrong": wrong, "no_match": none, "misses": misses,
             "evaluated_at": datetime.now().isoformat(timespec="seconds")}
+
+
+def evaluate_against_decisions(engine: Engine) -> dict:
+    """Replay the owner's decisions through the scorer: confirmed pairs it would no
+    longer find, and rejected pairs it would still suggest."""
+    expenses, docs = _load(engine)
+    by_expense = {e["id"]: e for e in expenses}
+    by_doc = {d["id"]: d for d in docs}
+    _, card_map = plan_matches(expenses, docs, {}, set())
+    with engine.connect() as connection:
+        ensure_schema(engine)
+        rows = connection.execute(text(
+            "SELECT expense_id, document_id, status FROM expense_documents "
+            "WHERE status IN ('confirmed', 'rejected') AND method != 'receipt'")).all()
+    report = {"confirmed": 0, "confirmed_found": 0, "rejected": 0, "rejected_suggested": 0, "misses": []}
+    for expense_id, doc_id, status in rows:
+        expense, doc = by_expense.get(expense_id), by_doc.get(doc_id)
+        if expense is None or doc is None:
+            continue
+        found = score_pair(expense, doc, card_map) is not None
+        report[status] += 1
+        if status == "confirmed" and found:
+            report["confirmed_found"] += 1
+        if status == "rejected" and found:
+            report["rejected_suggested"] += 1
+            report["misses"].append(f"still suggested: {expense['date']} {expense['merchant']} ${expense['amount']} "
+                                    f"-> {doc['path']}")
+    return report

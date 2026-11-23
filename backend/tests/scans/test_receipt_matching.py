@@ -12,6 +12,8 @@ def doc(body="", **kw):
     base = {"id": 1, "path": "x/2024-06-13_20-31_uber.pdf", "kind": "receipt", "person": None,
             "doc_date": date(2024, 6, 13), "merchant": "uber", "ocr_total": None, "facts": read_receipt(body)}
     base.update(kw)
+    if "merchant" in kw and "path" not in kw:  # filenames name the store, as filed
+        base["path"] = f"x/2024-06-13_20-31_{kw['merchant'] or 'scan'}.pdf"
     return base
 
 
@@ -81,6 +83,44 @@ def test_a_round_item_price_alone_is_never_sure():
 def test_crowded_statement_needs_the_store():
     statement = doc(" ".join(f"{i}.99" for i in range(1, 60)), merchant="rfcu_statement")
     assert score_pair(expense(amount=2.99, merchant="youtube"), statement) is None
+
+
+def test_a_town_on_the_receipt_is_not_the_store_for_a_long_gap():
+    receipt = doc("Fern\n1 Main St, Riverton NC\nTotal 41.00\nParking validation 6.00", path="x/2026-05-06_fern.pdf",
+                  merchant="fern", doc_date=date(2026, 5, 6))
+    assert score_pair(expense(amount=6.0, merchant="riverton_prkg", original_input_name="RIVERTON PRKG WALL RIVERTON",
+                              date="2026-05-01"), receipt) is None
+    bill = doc("Maple Auto\nAlternator\nTotal due 840.33", path="cars/van/2025-12-26_maple_auto_alternator.pdf",
+               kind="car", merchant=None, doc_date=date(2025, 12, 26))
+    c = score_pair(expense(amount=840.33, merchant="maple_auto", original_input_name="MAPLE AUTO SPRINGFIELD",
+                           date="2026-01-22"), bill)
+    assert c and "in the filename" in "; ".join(c.reasons)
+
+
+def test_a_cut_off_generic_word_is_not_a_store_name():
+    excise = doc("Motor vehicle excise\nCompany fee 5.00\nTotal 58.24", path="cars/van/2026-02-12_excise_tax.pdf",
+                 kind="car", merchant=None, doc_date=date(2026, 2, 12))
+    assert score_pair(expense(amount=5.0, merchant="seaside_pier", original_input_name="SEASIDE PIER COMPA",
+                              date="2026-02-27"), excise) is None
+
+
+def test_car_paperwork_needs_the_payee_or_the_same_day():
+    schedule = doc("Insurance payment schedule\nInstallment 10.00\nAmount paid 10.00", kind="car", merchant=None,
+                   path="cars/wagon/2025-01-28_insurance_payment_schedule.pdf", doc_date=date(2025, 1, 28))
+    assert score_pair(expense(amount=10.0, merchant="j_smith", date="2025-01-29"), schedule) is None
+    loan = doc("Loan and security agreement\nFee 10.00", kind="car", merchant=None, ocr_total=10.0,
+               path="cars/coupe/2025-04-10_loan_and_security_agreement.pdf", doc_date=date(2025, 4, 10))
+    assert score_pair(expense(amount=12.53, merchant="bean_connection", date="2025-04-11"), loan) is None
+    parts = doc("AutoZone\nFlasher 18.05\nTotal 18.05", kind="car", merchant=None,
+                path="cars/suv/2026-05-31_17-12_autozone_flasher.pdf", doc_date=date(2026, 5, 31))
+    assert score_pair(expense(amount=18.05, merchant="autozone", date="2026-05-31"), parts)
+
+
+def test_an_amount_somewhere_on_another_days_receipt_needs_the_store():
+    gas = doc("Fuel\nRegular 10.34 gal\nTotal 41.20", path="x/2025-06-18_gas.pdf", merchant="gas",
+              doc_date=date(2025, 6, 18), ocr_total=41.2)
+    assert score_pair(expense(amount=10.34, merchant="lakeside_cinema", date="2025-06-17"), gas) is None
+    assert score_pair(expense(amount=10.34, merchant="lakeside_cinema", date="2025-06-18"), gas)
 
 
 def test_learn_card_map_needs_agreement():
