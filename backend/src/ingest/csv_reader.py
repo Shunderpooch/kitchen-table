@@ -175,10 +175,15 @@ def detect_csv_format(df: pd.DataFrame) -> str:
         'household' - The household expenses spreadsheet format
         'discover' - Discover credit card statement format
         'amex' - American Express statement format
+        'robinhood' - Robinhood Gold Card transaction export
         'generic_bank' - Generic bank/credit card statement
         'unknown' - Unknown format
     """
     columns = set(col.lower().strip() for col in df.columns)
+
+    # Robinhood Gold Card export: Date, Time, Cardholder, Amount, Points, Balance, Status, Type, Merchant, Description
+    if {'cardholder', 'points', 'status', 'merchant', 'description', 'amount'} <= columns:
+        return 'robinhood'
 
     # Household expense spreadsheet format
     if 'type' in columns and 'subtype' in columns and 'merchant' in columns:
@@ -282,6 +287,32 @@ def normalize_amex_row(row: dict, card_name: str = "Amex") -> dict:
     }
 
 
+def normalize_robinhood_row(row: dict, card_name: str = "Robinhood") -> dict:
+    """Convert a Robinhood Gold Card export row to normalized expense format.
+
+    The export has a clean merchant name and the statement descriptor
+    ("TST* BAR PIE FRANKLIN 508-298-7090 MA"); the descriptor is what receipt
+    matching compares, as with other cards. Declined charges never posted:
+    their amount is blanked so the row is skipped like any row without one.
+    """
+    description = str(row.get('Description', '')).strip()
+    merchant = str(row.get('Merchant', '')).strip()
+    declined = str(row.get('Status', '')).strip().lower() == 'declined'
+    return {
+        'Date': row.get('Date', ''),
+        'Type': description or merchant,
+        'Subtype': '',
+        'Merchant': merchant or description,
+        'Original Input Name': description or merchant,
+        'Amount': '' if declined else row.get('Amount', ''),
+        'Spender': '',
+        'Card': card_name,
+        'Split': '1.0',
+        'Member B Spend': '',
+        'Member A Spend': '',
+    }
+
+
 def normalize_generic_bank_row(row: dict, card_name: str = "Bank") -> dict:
     """Convert a generic bank statement row to normalized expense format."""
     # Try various column names for description
@@ -355,6 +386,10 @@ def infer_statement_card_name(
         return "PenFed"
     if 'paypal' in filename:
         return "PayPal Credit"
+    if 'robinhood' in filename:
+        if normalized_spender:
+            return f"{normalized_spender} Robinhood"
+        return "Robinhood"
     if 'chase' in filename:
         return "Chase"
     return "Unknown"
@@ -975,6 +1010,8 @@ def summarize_input_file(
             row_dict = normalize_discover_row(row_dict, card_name)
         elif csv_format == 'amex':
             row_dict = normalize_amex_row(row_dict, card_name)
+        elif csv_format == 'robinhood':
+            row_dict = normalize_robinhood_row(row_dict, card_name)
         elif csv_format == 'generic_bank':
             row_dict = normalize_generic_bank_row(row_dict, card_name)
 
@@ -1036,6 +1073,8 @@ def read_expenses_csv(
             row_dict = normalize_discover_row(row_dict, card_name)
         elif csv_format == 'amex':
             row_dict = normalize_amex_row(row_dict, card_name)
+        elif csv_format == 'robinhood':
+            row_dict = normalize_robinhood_row(row_dict, card_name)
         elif csv_format == 'generic_bank':
             row_dict = normalize_generic_bank_row(row_dict, card_name)
         # 'household' format is already in the expected format
