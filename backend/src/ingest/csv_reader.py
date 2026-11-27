@@ -2,6 +2,7 @@
 
 import hashlib
 import re
+from collections import Counter
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -137,6 +138,21 @@ def compute_content_hash(row: dict) -> str:
     ]
     content = '|'.join(parts)
     return hashlib.sha256(content.encode()).hexdigest()[:32]
+
+
+def nth_content_hash(row: dict, seen: Counter) -> str:
+    """The row's content hash, told apart from identical rows earlier in the same file.
+
+    A statement lists two identical charges (two tickets, two rides) as two
+    rows; the second gets its own hash, so it is not taken for a duplicate.
+    Reading the same file again gives the same hashes.
+    """
+    base = compute_content_hash(row)
+    count = seen[base]
+    seen[base] += 1
+    if not count:
+        return base
+    return hashlib.sha256(f"{base}|#{count}".encode()).hexdigest()[:32]
 
 
 def is_uncategorized_bank_transaction(type_value: str) -> bool:
@@ -445,6 +461,10 @@ def parse_bofa_pdf_rows(
                 continue
 
             description = parts[2]
+            if re.match(r"BALANCE TRANSFER\b", description, re.I) and "FEE" not in description.upper():
+                continue  # debt moved from another card, whose purchases are already recorded; the fee is a cost
+            if current_section == "Payments and Other Credits" and re.search(r"\bPMT\b", description, re.I):
+                continue  # "PMT FROM BILL PAYER SERVICE": a payment, like the "PAYMENT" rows skipped later
             transaction_month = int(parts[0].split("/")[0])
             transaction_year = closing_date.year if closing_date else datetime.now().year
             if closing_date and transaction_month > closing_date.month:
@@ -1065,6 +1085,7 @@ def read_expenses_csv(
     card_name = infer_statement_card_name(file_path, card_name, spender_name)
     print(f"  Using card name: {card_name}")
 
+    seen: Counter = Counter()
     for _, row in df.iterrows():
         row_dict = row.to_dict()
 
@@ -1133,7 +1154,7 @@ def read_expenses_csv(
             source_file=source_file,
             needs_validation=needs_validation,
             is_approved=is_approved,
-            content_hash=compute_content_hash(row_dict),
+            content_hash=nth_content_hash(row_dict, seen),
         )
 
         yield expense
@@ -1170,6 +1191,7 @@ def read_expenses_excel(
     card_name = infer_statement_card_name(file_path, card_name, spender_name)
     print(f"  Using card name: {card_name}")
 
+    seen: Counter = Counter()
     for _, row in df.iterrows():
         row_dict = row.to_dict()
 
@@ -1230,7 +1252,7 @@ def read_expenses_excel(
             source_file=source_file,
             needs_validation=needs_validation,
             is_approved=is_approved,
-            content_hash=compute_content_hash(row_dict),
+            content_hash=nth_content_hash(row_dict, seen),
         )
 
         yield expense
@@ -1248,6 +1270,7 @@ def read_expenses_pdf(
     print("  Detected PDF format: supported_statement")
     print(f"  Using card name: {card_name}")
 
+    seen: Counter = Counter()
     for row_dict in parse_pdf_rows(file_path, card_name=card_name, spender_name=spender_name):
         expense_date = parse_date(row_dict.get('Date'))
         if expense_date is None:
@@ -1286,7 +1309,7 @@ def read_expenses_pdf(
             source_file=source_file,
             needs_validation=is_uncategorized_bank_transaction(type_value),
             is_approved=False,
-            content_hash=compute_content_hash(row_dict),
+            content_hash=nth_content_hash(row_dict, seen),
         )
 
         yield expense

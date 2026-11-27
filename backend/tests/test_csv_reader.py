@@ -22,5 +22,47 @@ def test_robinhood_export(tmp_path):
     assert summarize_input_file(path, card_name="Alex Robinhood") == {"payments_or_credits_skipped": 1}
 
 
+BOFA_PAGE = """Bank of America
+Statement Closing Date 09/05/2026
+Payments and Other Credits
+09/02    09/02    PMT FROM BILL PAYER SERVICE          1234   5678    -1,238.00
+09/02    09/02    ONLINE/MOBILE PAYMENT CONF#abc123    1234   5678      -312.00
+Purchases and Adjustments
+08/19    08/20    MOUNTAIN OUTFITTERS                  1234   5678       656.00
+Balance Transfers
+08/24    08/24    BALANCE TRANSFER AMERICAN EXP        1234   5678     6,300.00
+Fees
+08/24    08/24    BALANCE TRANSFER - TRANSACTION FEE   1234   5678       252.00
+"""
+
+
+def test_bofa_balance_transfers_and_bill_payer_payments(tmp_path, monkeypatch):
+    from backend.src.ingest import csv_reader
+
+    class Page:
+        def extract_text(self, **_):
+            return BOFA_PAGE
+
+    monkeypatch.setattr(csv_reader, "PdfReader", lambda _: type("R", (), {"pages": [Page()]})())
+    rows = csv_reader.parse_bofa_pdf_rows(tmp_path / "eStmt_2026-09-05.pdf", spender_name="Alex")
+    assert [(r["Type"], r["Amount"]) for r in rows] == [
+        ("ONLINE/MOBILE PAYMENT CONF#abc123", "-312.00"),  # skipped later, as every "PAYMENT" row is
+        ("MOUNTAIN OUTFITTERS", "656.00"),
+        ("BALANCE TRANSFER - TRANSACTION FEE", "252.00"),
+    ]
+
+
+def test_identical_rows_in_one_statement_are_separate_charges(tmp_path):
+    path = tmp_path / "Discover-2026-YearToDateSummary.csv"
+    path.write_text(
+        "Trans. Date,Post Date,Description,Amount,Category\n"
+        '04/02/2026,04/02/2026,"PP*SKYAIR 888-555-0100 CA",392.80,"Travel/ Entertainment"\n'
+        '04/02/2026,04/02/2026,"PP*SKYAIR 888-555-0100 CA",392.80,"Travel/ Entertainment"\n', encoding="utf-8")
+    first, second = read_expenses_csv(path, card_name="Alex Discover")
+    assert first.content_hash != second.content_hash
+    assert [e.content_hash for e in read_expenses_csv(path, card_name="Alex Discover")] == [
+        first.content_hash, second.content_hash]  # the same file reads the same way again
+
+
 def test_robinhood_card_name_from_filename(tmp_path):
     assert infer_statement_card_name(tmp_path / "robinhood_activity.csv", spender_name="Alex") == "Alex Robinhood"
