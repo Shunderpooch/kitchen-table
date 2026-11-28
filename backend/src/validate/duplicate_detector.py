@@ -5,6 +5,7 @@ from decimal import Decimal
 from typing import List, Tuple
 
 from rapidfuzz import fuzz
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import load_only
 
@@ -77,7 +78,9 @@ def find_fuzzy_duplicates(
     start_date = expense.date - timedelta(days=date_window)
     end_date = expense.date + timedelta(days=date_window)
 
-    # Query potential duplicates
+    # Query potential duplicates. Expenses made from a scanned receipt are not
+    # candidates: receipt matching merges them into the statement row, which
+    # carries the card and the amount actually charged.
     candidates = (
         session.query(Expense)
         .options(load_only(Expense.id, Expense.date, Expense.amount, Expense.merchant))
@@ -85,6 +88,7 @@ def find_fuzzy_duplicates(
             Expense.date >= start_date,
             Expense.date <= end_date,
             Expense.id != expense.id if expense.id else True,
+            or_(Expense.content_hash.is_(None), ~Expense.content_hash.like("receipt:%")),
         )
         .all()
     )

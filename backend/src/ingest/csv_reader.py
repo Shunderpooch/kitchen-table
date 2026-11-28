@@ -2,6 +2,7 @@
 
 import hashlib
 import re
+from collections import Counter
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -139,6 +140,21 @@ def compute_content_hash(row: dict) -> str:
     return hashlib.sha256(content.encode()).hexdigest()[:32]
 
 
+def nth_content_hash(row: dict, seen: Counter) -> str:
+    """The row's content hash, told apart from identical rows earlier in the same file.
+
+    A statement lists two identical charges (two tickets, two rides) as two
+    rows; the second gets its own hash, so it is not taken for a duplicate.
+    Reading the same file again gives the same hashes.
+    """
+    base = compute_content_hash(row)
+    count = seen[base]
+    seen[base] += 1
+    if not count:
+        return base
+    return hashlib.sha256(f"{base}|#{count}".encode()).hexdigest()[:32]
+
+
 def is_uncategorized_bank_transaction(type_value: str) -> bool:
     """Check if a type value is a raw bank transaction string (not a canonical category).
 
@@ -175,10 +191,15 @@ def detect_csv_format(df: pd.DataFrame) -> str:
         'household' - The household expenses spreadsheet format
         'discover' - Discover credit card statement format
         'amex' - American Express statement format
+        'robinhood' - Robinhood Gold Card transaction export
         'generic_bank' - Generic bank/credit card statement
         'unknown' - Unknown format
     """
     columns = set(col.lower().strip() for col in df.columns)
+
+    # Robinhood Gold Card export: Date, Time, Cardholder, Amount, Points, Balance, Status, Type, Merchant, Description
+    if {'cardholder', 'points', 'status', 'merchant', 'description', 'amount'} <= columns:
+        return 'robinhood'
 
     # Household expense spreadsheet format
     if 'type' in columns and 'subtype' in columns and 'merchant' in columns:
@@ -282,6 +303,36 @@ def normalize_amex_row(row: dict, card_name: str = "Amex") -> dict:
     }
 
 
+def normalize_robinhood_row(row: dict, card_name: str = "Robinhood") -> dict:
+    """Convert a Robinhood Gold Card export row to normalized expense format.
+
+    The export has a clean merchant name and the statement descriptor
+    ("TST* BAR PIE FRANKLIN 508-298-7090 MA"); the descriptor is what receipt
+    matching compares, as with other cards. Declined charges never posted:
+    their amount is blanked so the row is skipped like any row without one.
+    Foreign purchases carry the placeholder descriptor "FOREIGN TRANSACTION
+    FEE" (the card charges no such fee), so the merchant name stands in.
+    """
+    description = str(row.get('Description', '')).strip()
+    merchant = str(row.get('Merchant', '')).strip()
+    if description.upper() == 'FOREIGN TRANSACTION FEE' and merchant:
+        description = merchant
+    declined = str(row.get('Status', '')).strip().lower() == 'declined'
+    return {
+        'Date': row.get('Date', ''),
+        'Type': description or merchant,
+        'Subtype': '',
+        'Merchant': merchant or description,
+        'Original Input Name': description or merchant,
+        'Amount': '' if declined else row.get('Amount', ''),
+        'Spender': '',
+        'Card': card_name,
+        'Split': '1.0',
+        'Member B Spend': '',
+        'Member A Spend': '',
+    }
+
+
 def normalize_generic_bank_row(row: dict, card_name: str = "Bank") -> dict:
     """Convert a generic bank statement row to normalized expense format."""
     # Try various column names for description
@@ -355,6 +406,10 @@ def infer_statement_card_name(
         return "PenFed"
     if 'paypal' in filename:
         return "PayPal Credit"
+    if 'robinhood' in filename:
+        if normalized_spender:
+            return f"{normalized_spender} Robinhood"
+        return "Robinhood"
     if 'chase' in filename:
         return "Chase"
     return "Unknown"
@@ -410,6 +465,10 @@ def parse_bofa_pdf_rows(
                 continue
 
             description = parts[2]
+            if re.match(r"BALANCE TRANSFER\b", description, re.I) and "FEE" not in description.upper():
+                continue  # debt moved from another card, whose purchases are already recorded; the fee is a cost
+            if current_section == "Payments and Other Credits" and re.search(r"\bPMT\b", description, re.I):
+                continue  # "PMT FROM BILL PAYER SERVICE": a payment, like the "PAYMENT" rows skipped later
             transaction_month = int(parts[0].split("/")[0])
             transaction_year = closing_date.year if closing_date else datetime.now().year
             if closing_date and transaction_month > closing_date.month:
@@ -975,6 +1034,8 @@ def summarize_input_file(
             row_dict = normalize_discover_row(row_dict, card_name)
         elif csv_format == 'amex':
             row_dict = normalize_amex_row(row_dict, card_name)
+        elif csv_format == 'robinhood':
+            row_dict = normalize_robinhood_row(row_dict, card_name)
         elif csv_format == 'generic_bank':
             row_dict = normalize_generic_bank_row(row_dict, card_name)
 
@@ -1028,6 +1089,7 @@ def read_expenses_csv(
     card_name = infer_statement_card_name(file_path, card_name, spender_name)
     print(f"  Using card name: {card_name}")
 
+    seen: Counter = Counter()
     for _, row in df.iterrows():
         row_dict = row.to_dict()
 
@@ -1036,6 +1098,8 @@ def read_expenses_csv(
             row_dict = normalize_discover_row(row_dict, card_name)
         elif csv_format == 'amex':
             row_dict = normalize_amex_row(row_dict, card_name)
+        elif csv_format == 'robinhood':
+            row_dict = normalize_robinhood_row(row_dict, card_name)
         elif csv_format == 'generic_bank':
             row_dict = normalize_generic_bank_row(row_dict, card_name)
         # 'household' format is already in the expected format
@@ -1094,7 +1158,7 @@ def read_expenses_csv(
             source_file=source_file,
             needs_validation=needs_validation,
             is_approved=is_approved,
-            content_hash=compute_content_hash(row_dict),
+            content_hash=nth_content_hash(row_dict, seen),
         )
 
         yield expense
@@ -1131,6 +1195,7 @@ def read_expenses_excel(
     card_name = infer_statement_card_name(file_path, card_name, spender_name)
     print(f"  Using card name: {card_name}")
 
+    seen: Counter = Counter()
     for _, row in df.iterrows():
         row_dict = row.to_dict()
 
@@ -1191,7 +1256,7 @@ def read_expenses_excel(
             source_file=source_file,
             needs_validation=needs_validation,
             is_approved=is_approved,
-            content_hash=compute_content_hash(row_dict),
+            content_hash=nth_content_hash(row_dict, seen),
         )
 
         yield expense
@@ -1209,6 +1274,7 @@ def read_expenses_pdf(
     print("  Detected PDF format: supported_statement")
     print(f"  Using card name: {card_name}")
 
+    seen: Counter = Counter()
     for row_dict in parse_pdf_rows(file_path, card_name=card_name, spender_name=spender_name):
         expense_date = parse_date(row_dict.get('Date'))
         if expense_date is None:
@@ -1247,7 +1313,7 @@ def read_expenses_pdf(
             source_file=source_file,
             needs_validation=is_uncategorized_bank_transaction(type_value),
             is_approved=False,
-            content_hash=compute_content_hash(row_dict),
+            content_hash=nth_content_hash(row_dict, seen),
         )
 
         yield expense
