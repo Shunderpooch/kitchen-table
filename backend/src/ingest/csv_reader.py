@@ -310,9 +310,13 @@ def normalize_robinhood_row(row: dict, card_name: str = "Robinhood") -> dict:
     ("TST* BAR PIE FRANKLIN 508-298-7090 MA"); the descriptor is what receipt
     matching compares, as with other cards. Declined charges never posted:
     their amount is blanked so the row is skipped like any row without one.
+    Foreign purchases carry the placeholder descriptor "FOREIGN TRANSACTION
+    FEE" (the card charges no such fee), so the merchant name stands in.
     """
     description = str(row.get('Description', '')).strip()
     merchant = str(row.get('Merchant', '')).strip()
+    if description.upper() == 'FOREIGN TRANSACTION FEE' and merchant:
+        description = merchant
     declined = str(row.get('Status', '')).strip().lower() == 'declined'
     return {
         'Date': row.get('Date', ''),

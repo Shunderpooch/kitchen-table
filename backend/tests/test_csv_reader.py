@@ -22,6 +22,16 @@ def test_robinhood_export(tmp_path):
     assert summarize_input_file(path, card_name="Alex Robinhood") == {"payments_or_credits_skipped": 1}
 
 
+def test_robinhood_foreign_purchase_uses_merchant(tmp_path):
+    path = tmp_path / "9066daad.csv"
+    path.write_text(
+        "Date,Time,Cardholder,Amount,Points,Balance,Status,Type,Merchant,Description\n"
+        '2026-11-07,"7:49 AM","Alex Doe",13.11,39,95.64,Posted,Purchase,"Harbor Bakery","FOREIGN TRANSACTION FEE"\n',
+        encoding="utf-8")
+    (row,) = read_expenses_csv(path, card_name="Alex Robinhood")
+    assert (row.merchant, row.original_input_name, float(row.amount)) == ("Harbor Bakery", "Harbor Bakery", 13.11)
+
+
 BOFA_PAGE = """Bank of America
 Statement Closing Date 09/05/2026
 Payments and Other Credits
